@@ -474,6 +474,7 @@ const LEAGUES = [
 
 // ===== INIT =====
 async function init() {
+  localStorage.removeItem('hoopdb_v1');
   loadFromStorage();
   renderLeagueSidebar();
   renderLeaguePills();
@@ -514,7 +515,10 @@ async function autoLoadData() {
 
 // ===== STORAGE =====
 function saveToStorage() {
-  try { localStorage.setItem('hoopdb_v1', JSON.stringify(DB)); } catch(e) {}
+  try {
+    const json = JSON.stringify(DB);
+    if (json.length < 4000000) localStorage.setItem('hoopdb_v1', json);
+  } catch(e) {}
 }
 function loadFromStorage() {
   try {
