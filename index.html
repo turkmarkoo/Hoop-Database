@@ -690,7 +690,7 @@ function renderTable(players, showRank) {
       const leagueInfo = LEAGUES.find(l=>l.id===p.league);
       const lcolor = leagueInfo?.color || '#888';
       const posClass = p.position?.includes('G')?'G':p.position?.includes('F')?p.position==='PF'?'PF':'F':p.position==='C'?'C':'G';
-      return `<tr onclick="openPlayer('${p.playerCode}')" style="cursor:pointer;">`
+      return `<tr onclick="openPlayer('${p.playerCode}')"style="cursor:pointer;">`
         ${showRank?`<td style="color:var(--text3);font-size:12px;">${idx}<\/td>`:''}
         <td>
           <div class="player-cell">
