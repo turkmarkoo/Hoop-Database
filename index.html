@@ -236,6 +236,32 @@
   .empty-state .icon { font-size: 40px; margin-bottom: 12px; }
   .empty-state h3 { font-size: 16px; color: var(--text2); margin-bottom: 6px; }
   .empty-state p { font-size: 13px; max-width: 340px; margin: 0 auto 16px; }
+
+  .modal-tabs{display:flex;border-bottom:1px solid var(--border);padding:0 24px}
+  .modal-tab{padding:10px 16px;font-size:13px;color:var(--text3);cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-1px;transition:all .12s;user-select:none}
+  .modal-tab:hover{color:var(--text)} .modal-tab.active{color:var(--accent);border-bottom-color:var(--accent)}
+  .modal-tab-content{display:none} .modal-tab-content.active{display:block}
+  .shoot-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:var(--border);border-radius:var(--radius);overflow:hidden;margin-bottom:12px}
+  .shoot-cell{background:var(--surface2);padding:10px 12px;text-align:center}
+  .shoot-cell-label{font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:.6px;margin-bottom:4px}
+  .shoot-cell-val{font-size:16px;font-weight:700}
+  .shoot-cell-sub{font-size:11px;color:var(--text3);margin-top:2px}
+  .shoot-bar-wrap{height:4px;background:var(--surface3);border-radius:2px;margin-top:6px;overflow:hidden}
+  .shoot-bar{height:100%;border-radius:2px}
+  .gamelog-wrap{overflow-x:auto;padding:0 24px 16px}
+  .gamelog-table{width:100%;border-collapse:collapse;font-size:12px}
+  .gamelog-table thead th{padding:7px 8px;font-size:10px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:.5px;background:var(--surface2);border-bottom:1px solid var(--border);white-space:nowrap;text-align:center}
+  .gamelog-table thead th:first-child{text-align:left}
+  .gamelog-table tbody tr{border-bottom:1px solid var(--border);transition:background .1s}
+  .gamelog-table tbody tr:hover{background:rgba(255,255,255,.03)}
+  .gamelog-table tbody td{padding:7px 8px;text-align:center;white-space:nowrap}
+  .gamelog-table tbody td:first-child{text-align:left}
+  .gl-opp{display:flex;align-items:center;gap:6px}
+  .gl-opp img{width:18px;height:18px;object-fit:contain}
+  .gl-loc{font-size:10px;color:var(--text3);width:16px}
+  .gl-pts-high{color:var(--green);font-weight:600} .gl-pts-ok{color:var(--text)} .gl-pts-low{color:var(--text3)}
+  .gl-plus{color:var(--green)} .gl-minus{color:var(--red)} .gl-zero{color:var(--text3)}
+
 </style>
 </head>
 <body>
@@ -668,7 +694,7 @@ function renderTable(players, showRank) {
       const leagueInfo = LEAGUES.find(l=>l.id===p.league);
       const lcolor = leagueInfo?.color || '#888';
       const posClass = p.position?.includes('G')?'G':p.position?.includes('F')?p.position==='PF'?'PF':'F':p.position==='C'?'C':'G';
-      return `<tr onclick="openPlayer(${JSON.stringify(p).replace(/"/g,'&quot;')})" style="cursor:pointer;">
+      return `<tr onclick="openPlayer('${p.playerCode}')" style="cursor:pointer;">`
         ${showRank?`<td style="color:var(--text3);font-size:12px;">${idx}</td>`:''}
         <td>
           <div class="player-cell">
@@ -731,83 +757,152 @@ function populateFilters() {
 }
 
 // ===== PLAYER MODAL =====
-function openPlayer(p) {
-  const initials = p.name.split(' ').map(w=>w[0]).join('').substring(0,2).toUpperCase();
+function openPlayer(playerCode) {
+  const p = DB.players.find(x => x.playerCode === playerCode) || {};
+  const initials = (p.name||'?').split(' ').map(w=>w[0]).join('').substring(0,2).toUpperCase();
   const leagueInfo = LEAGUES.find(l=>l.id===p.league);
   const lcolor = leagueInfo?.color || '#888';
-  const maxPts = Math.max(...DB.players.map(x=>x.pts||0)) || 30;
-  const maxReb = Math.max(...DB.players.map(x=>x.reb||0)) || 15;
-  const maxAst = Math.max(...DB.players.map(x=>x.ast||0)) || 12;
-  const maxStl = Math.max(...DB.players.map(x=>x.stl||0)) || 3;
-  const maxBlk = Math.max(...DB.players.map(x=>x.blk||0)) || 3;
+  const maxPts = Math.max(...DB.players.map(x=>x.pts||0),1);
+  const maxReb = Math.max(...DB.players.map(x=>x.reb||0),1);
+  const maxAst = Math.max(...DB.players.map(x=>x.ast||0),1);
 
-  document.getElementById('modal-content').innerHTML = `
-    <div class="modal-hero">
-      <div class="modal-avatar">
-        ${p.img ? `<img src="${p.img}" alt="${p.name}" onerror="this.style.display='none';this.parentElement.textContent='${initials}'">` : initials}
-      </div>
-      <div>
-        <div class="modal-player-name">${p.name}</div>
-        <div class="modal-player-meta">${p.team || 'Unknown Team'} · ${p.nationality || ''}</div>
-        <div class="modal-tags">
-          <span class="tag tag-pos">${p.position || '?'}</span>
-          <span class="tag tag-team">🏟 ${p.team || '—'}</span>
-          <span class="tag tag-league" style="background:${lcolor}22;color:${lcolor};border:1px solid ${lcolor}44;">${p.league}</span>
-          ${p.height ? `<span class="tag tag-team">📏 ${p.height}</span>` : ''}
-          ${p.age ? `<span class="tag tag-team">🎂 ${p.age}y</span>` : ''}
+  const hero = `<div class="modal-hero">
+      <div class="modal-avatar">${p.img ? `<img src="${p.img}" alt="${p.name}" onerror="this.style.display='none';this.parentElement.textContent='${initials}'">` : initials}</div>
+      <div style="flex:1">
+        <div class="modal-player-name">${p.name||'—'}</div>
+        <div class="modal-player-meta">${p.team||'—'} · ${p.nationality||''}${p.birthDate?' · b. '+p.birthDate.slice(0,4):''}</div>
+        <div class="modal-tags" style="margin-top:8px">
+          <span class="tag tag-pos">${p.position||'?'}</span>
+          <span class="tag tag-team">🏟 ${p.team||'—'}</span>
+          <span class="tag tag-league" style="background:${lcolor}22;color:${lcolor};border:1px solid ${lcolor}44">${p.league||''}</span>
+          ${p.height?`<span class="tag tag-team">📏 ${p.height}</span>`:''}
+          ${p.dorsal?`<span class="tag tag-team">#${p.dorsal}</span>`:''}
         </div>
+      </div></div>`;
+
+  const keyBar = `<div class="modal-stats-grid">
+    <div class="modal-stat-cell"><div class="modal-stat-val v-green">${fmt(p.pts)}</div><div class="modal-stat-lbl">PPG</div></div>
+    <div class="modal-stat-cell"><div class="modal-stat-val v-accent">${fmt(p.reb)}</div><div class="modal-stat-lbl">RPG</div></div>
+    <div class="modal-stat-cell"><div class="modal-stat-val v-amber">${fmt(p.ast)}</div><div class="modal-stat-lbl">APG</div></div>
+    <div class="modal-stat-cell"><div class="modal-stat-val v-purple">${fmt(p.stl)}</div><div class="modal-stat-lbl">SPG</div></div>
+    <div class="modal-stat-cell"><div class="modal-stat-val">${fmt(p.blk)}</div><div class="modal-stat-lbl">BPG</div></div>
+  </div>`;
+
+  const sCell = (lbl,made,att,pct,clr) => {
+    const v = pct!==undefined&&pct!==null ? pct : (att>0?Math.round(made/att*1000)/10:0);
+    const vn = parseFloat(v)||0;
+    return `<div class="shoot-cell"><div class="shoot-cell-label">${lbl}</div>
+      <div class="shoot-cell-val" style="color:${clr}">${isNaN(vn)?'—':vn.toFixed(1)}%</div>
+      <div class="shoot-cell-sub">${made!=null?made:'—'}/${att!=null?att:'—'}</div>
+      <div class="shoot-bar-wrap"><div class="shoot-bar" style="width:${Math.min(vn,100)}%;background:${clr}"></div></div></div>`;
+  };
+
+  const efg = p.fga>0?Math.round(((p.fgm||0)+.5*(p.fg3m||0))/(p.fga)*1000)/10:0;
+  const ts  = (p.fga||0)+.44*(p.fta||0)>0?Math.round((p.pts_total||0)/(2*((p.fga||0)+.44*(p.fta||0)))*1000)/10:0;
+
+  const overview = `<div class="modal-tab-content active" id="tab-overview-${playerCode}">
+    <div class="modal-section"><h4>Shooting Splits</h4>
+      <div class="shoot-grid">
+        ${sCell('FG%',p.fgm,p.fga,p.fg_pct,'var(--green)')}
+        ${sCell('2P%',p.fg2m,p.fg2a,p.fg2_pct,'var(--accent)')}
+        ${sCell('3P%',p.fg3m,p.fg3a,p.three_pct||p.fg3_pct,'var(--amber)')}
+        ${sCell('FT%',p.ftm,p.fta,p.ft_pct,'var(--purple)')}
+        ${sCell('eFG%',null,null,efg,'var(--teal)')}
+        ${sCell('TS%',null,null,ts,'var(--text2)')}
       </div>
     </div>
-    <div class="modal-stats-grid">
-      <div class="modal-stat-cell"><div class="modal-stat-val v-green">${fmt(p.pts)}</div><div class="modal-stat-lbl">PPG</div></div>
-      <div class="modal-stat-cell"><div class="modal-stat-val v-accent">${fmt(p.reb)}</div><div class="modal-stat-lbl">RPG</div></div>
-      <div class="modal-stat-cell"><div class="modal-stat-val v-amber">${fmt(p.ast)}</div><div class="modal-stat-lbl">APG</div></div>
-      <div class="modal-stat-cell"><div class="modal-stat-val v-purple">${fmt(p.stl)}</div><div class="modal-stat-lbl">SPG</div></div>
-      <div class="modal-stat-cell"><div class="modal-stat-val">${fmt(p.blk)}</div><div class="modal-stat-lbl">BPG</div></div>
-    </div>
-    <div class="modal-section">
-      <h4>Performance breakdown</h4>
-      ${miniBar('Points per game', p.pts, maxPts, 'var(--green)')}
-      ${miniBar('Rebounds per game', p.reb, maxReb, 'var(--accent)')}
-      ${miniBar('Assists per game', p.ast, maxAst, 'var(--amber)')}
-      ${miniBar('Steals per game', p.stl, maxStl, 'var(--purple)')}
-      ${miniBar('Blocks per game', p.blk, maxBlk, 'var(--teal)')}
-    </div>
-    <div class="modal-section">
-      <h4>Shooting splits</h4>
-      ${miniBar('Field Goal %', p.fg_pct, 65, 'var(--green)')}
-      ${miniBar('3-Point %', p.three_pct, 50, 'var(--accent)')}
-      ${miniBar('Free Throw %', p.ft_pct, 100, 'var(--amber)')}
-    </div>
-    <div class="modal-section">
-      <h4>Season totals</h4>
-      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;">
-        ${infoCell('Games Played', p.gp||'—')}
-        ${infoCell('Minutes/G', fmt(p.min))}
-        ${infoCell('Turnovers/G', fmt(p.to))}
-        ${infoCell('Eff. Rating', calcEFF(p))}
-        ${infoCell('True Shooting %', calcTS(p))}
-        ${infoCell('AST/TO Ratio', p.to ? ((p.ast||0)/(p.to||1)).toFixed(1) : '—')}
+    <div class="modal-section"><h4>Season Totals</h4>
+      <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px">
+        ${infoCell('GP',p.gp||'—')} ${infoCell('GS',p.gs||'—')}
+        ${infoCell('Min Total',p.min_total||'—')} ${infoCell('Points',p.pts_total||'—')}
+        ${infoCell('Rebounds',p.reb_total||'—')} ${infoCell('Assists',p.ast_total||'—')}
+        ${infoCell('Steals',p.stl_total||'—')} ${infoCell('Blocks',p.blk_total||'—')}
+        ${infoCell('Turnovers',p.to_total||'—')} ${infoCell('PIR',p.pir_total||'—')}
+        ${infoCell('FC',p.fc_total||'—')} ${infoCell('FD',p.fd_total||'—')}
       </div>
     </div>
-  `;
+    <div class="modal-section"><h4>Per Game Averages</h4>
+      ${miniBar('Points',p.pts,maxPts,'var(--green)')}
+      ${miniBar('Rebounds',p.reb,maxReb,'var(--accent)')}
+      ${miniBar('Assists',p.ast,maxAst,'var(--amber)')}
+      ${miniBar('Steals',p.stl,3,'var(--purple)')}
+      ${miniBar('Blocks',p.blk,3,'var(--teal)')}
+      ${miniBar('PIR',p.pir,30,'var(--text2)')}
+    </div>
+    <div class="modal-section"><h4>Advanced</h4>
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px">
+        ${infoCell('EFF',calcEFF(p))} ${infoCell('TS%',ts+'%')}
+        ${infoCell('AST/TO',p.to?((p.ast||0)/(p.to||1)).toFixed(1):'—')}
+        ${infoCell('OREB/G',fmt(p.oreb))} ${infoCell('DREB/G',fmt(p.dreb))}
+        ${infoCell('FC/G',fmt(p.fc))}
+      </div>
+    </div>
+  </div>`;
+
+  const games = p.gamelog || [];
+  const glRows = games.map(g => {
+    const fg2s = g.fg2m!=null?`${g.fg2m}/${g.fg2a}`:'—';
+    const fg3s = g.fg3m!=null?`${g.fg3m}/${g.fg3a}`:'—';
+    const fts  = g.ftm !=null?`${g.ftm}/${g.fta}`:'—';
+    const pc   = (g.pts||0)>=20?'gl-pts-high':(g.pts||0)>=10?'gl-pts-ok':'gl-pts-low';
+    const pm   = g.plusMinus; const pmc = pm>0?'gl-plus':pm<0?'gl-minus':'gl-zero';
+    const pms  = pm!=null?(pm>0?'+':'')+pm:'—';
+    const link = g.gameUrl?`https://www.euroleaguebasketball.net${g.gameUrl}`:'#';
+    return `<tr>
+      <td><div class="gl-opp"><span class="gl-loc">${g.location==='home'?'vs':'@'}</span>
+        ${g.oppLogo?`<img src="${g.oppLogo}" alt="${g.opponent}" onerror="this.style.display='none'">`:''}
+        <a href="${link}" target="_blank" style="color:var(--text);text-decoration:none;font-weight:500">${g.opponent||'—'}</a>
+      </div></td>
+      <td>${g.min||'—'}</td><td class="${pc}">${g.pts??'—'}</td>
+      <td>${fg2s}</td><td>${fg3s}</td><td>${fts}</td>
+      <td>${g.reb??'—'}</td><td>${g.ast??'—'}</td><td>${g.stl??'—'}</td>
+      <td>${g.blk??'—'}</td><td>${g.to??'—'}</td>
+      <td>${g.pir??'—'}</td><td class="${pmc}">${pms}</td>
+    </tr>`;
+  }).join('');
+
+  const gamelog = `<div class="modal-tab-content" id="tab-gamelog-${playerCode}">
+    ${games.length===0
+      ? '<div style="text-align:center;padding:40px;color:var(--text3)">No game log data available</div>'
+      : `<div class="gamelog-wrap"><table class="gamelog-table">
+          <thead><tr>
+            <th style="text-align:left;min-width:100px">Opponent</th>
+            <th>MIN</th><th>PTS</th><th>2FG</th><th>3FG</th><th>FT</th>
+            <th>REB</th><th>AST</th><th>STL</th><th>BLK</th><th>TO</th><th>PIR</th><th>+/-</th>
+          </tr></thead>
+          <tbody>${glRows}</tbody>
+        </table></div>`}
+  </div>`;
+
+  document.getElementById('modal-content').innerHTML =
+    hero + keyBar +
+    `<div class="modal-tabs">
+      <div class="modal-tab active" onclick="switchModalTab('overview','${playerCode}',this)">Overview</div>
+      <div class="modal-tab" onclick="switchModalTab('gamelog','${playerCode}',this)">Game Log${games.length?' ('+games.length+')':''}</div>
+    </div>` + overview + gamelog;
+
   document.getElementById('modal-overlay').classList.add('open');
 }
 
+function switchModalTab(tab, code, el) {
+  document.querySelectorAll('.modal-tab').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.modal-tab-content').forEach(t => t.classList.remove('active'));
+  el.classList.add('active');
+  document.getElementById(`tab-${tab}-${code}`)?.classList.add('active');
+}
+
 function miniBar(label, val, max, color) {
-  const pct = Math.min(100, ((val||0)/max)*100);
+  const pct = Math.min(100,((val||0)/max)*100);
   return `<div class="mini-stat-row">
     <div class="mini-stat-lbl">${label}</div>
     <div class="mini-stat-bar-wrap"><div class="mini-stat-bar" style="width:${pct}%;background:${color}"></div></div>
-    <div class="mini-stat-val">${val||0}</div>
-  </div>`;
+    <div class="mini-stat-val">${fmt(val)}</div></div>`;
 }
 
 function infoCell(label, val) {
   return `<div style="background:var(--surface2);border-radius:6px;padding:8px 10px;">
-    <div style="font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:0.5px;">${label}</div>
-    <div style="font-size:16px;font-weight:600;margin-top:2px;">${val}</div>
-  </div>`;
+    <div style="font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:.5px">${label}</div>
+    <div style="font-size:15px;font-weight:600;margin-top:2px">${val}</div></div>`;
 }
 
 function closeModal() { document.getElementById('modal-overlay').classList.remove('open'); }
