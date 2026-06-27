@@ -1,0 +1,50 @@
+name: HoopDB — Scrape All Leagues
+
+on:
+  schedule:
+    - cron: "0 3 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  scrape:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Install Playwright (for JS-heavy sites)
+        run: |
+          pip install playwright
+          playwright install chromium --with-deps
+
+      - name: Run main scraper
+        run: python scraper.py
+
+      - name: Run browser scraper
+        run: python scrape_browser.py
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+
+      - name: Validate & prepare import file
+        run: python import_helper.py
+
+      - name: Commit updated data files
+        run: |
+          git config user.name  "HoopDB Scraper Bot"
+          git config user.email "scraper@hoop-database"
+          git add hoopdb_players.json hoopdb_import_ready.json || true
+          git diff --cached --quiet || git commit -m "🏀 Auto-scrape $(date -u '+%Y-%m-%d %H:%M') UTC"
+          git push
