@@ -447,7 +447,7 @@ const LEAGUES = [
 ];
 
 // ===== INIT =====
-function init() {
+async function init() {
   loadFromStorage();
   renderLeagueSidebar();
   renderLeaguePills();
@@ -458,6 +458,31 @@ function init() {
   populateFilters();
   populateCompareDropdowns();
   renderAdvanced();
+  if (DB.players.length === 0) await autoLoadData();
+}
+
+async function autoLoadData() {
+  const base = window.location.pathname.replace(/\/[^/]*$/, '');
+  const files = [
+    { url: base + '/euroleague_2025-26.json', label: 'Euroleague' },
+    { url: base + '/eurocup_2025-26.json',    label: 'Eurocup'    },
+  ];
+  const all = [];
+  for (const f of files) {
+    try {
+      const r = await fetch(f.url);
+      if (!r.ok) continue;
+      const data = await r.json();
+      if (Array.isArray(data)) all.push(...data);
+    } catch(e) {}
+  }
+  if (all.length > 0) {
+    addPlayers(all);
+    ['Euroleague','Eurocup'].forEach(l => {
+      const cnt = all.filter(p=>p.league===l).length;
+      if (cnt) setLeagueStatus(l, 'ok', cnt + ' players loaded', '');
+    });
+  }
 }
 
 // ===== STORAGE =====
@@ -591,9 +616,10 @@ function filterPlayers() {
     if (league && p.league !== league) return false;
     if (team && p.team !== team) return false;
     if (pos) {
-      if (pos === 'G' && !['G','PG','SG'].includes(p.position)) return false;
-      if (pos === 'F' && !['F','SF','PF','GF'].includes(p.position)) return false;
-      if (pos === 'C' && p.position !== 'C') return false;
+      const pp = (p.position||'').toLowerCase();
+      if (pos === 'G' && !['g','pg','sg','guard','point guard','shooting guard'].some(x=>pp.includes(x))) return false;
+      if (pos === 'F' && !['f','sf','pf','gf','forward','small forward','power forward'].some(x=>pp.includes(x))) return false;
+      if (pos === 'C' && !['c','center','centre'].some(x=>pp===x||pp.startsWith(x))) return false;
     }
     return true;
   });
@@ -605,7 +631,7 @@ function filterPlayers() {
 }
 
 function renderPlayerTable() {
-  if (!filteredPlayers.length) filteredPlayers = [...DB.players].sort((a,b)=>(b[sortCol]||0)-(a[sortCol]||0));
+  if (!filteredPlayers.length) filteredPlayers = [...DB.players].sort((a,b) => sortDir * ((b[sortCol]||0)-(a[sortCol]||0)));
   const start = (currentPage-1)*PAGE_SIZE;
   const page = filteredPlayers.slice(start, start+PAGE_SIZE);
   const wrap = document.getElementById('players-table-body');
