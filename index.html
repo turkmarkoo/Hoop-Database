@@ -484,7 +484,7 @@ async function init() {
   populateFilters();
   populateCompareDropdowns();
   renderAdvanced();
-  if (DB.players.length === 0) await autoLoadData();
+  await autoLoadData();
 }
 
 async function autoLoadData() {
@@ -503,6 +503,7 @@ async function autoLoadData() {
     } catch(e) {}
   }
   if (all.length > 0) {
+    DB.players = [];
     addPlayers(all);
     ['Euroleague','Eurocup'].forEach(l => {
       const cnt = all.filter(p=>p.league===l).length;
