@@ -1,4 +1,5 @@
 <!DOCTYPE html>
+<!-- HoopDB v3 ts:1782583337157 -->
 <html lang="en">
 <head>
 <meta charset="UTF-8">
@@ -514,13 +515,7 @@ async function autoLoadData() {
 
 // ===== STORAGE =====
  function saveToStorage() {
-     try { localStorage.setItem('hoopdb_v1', JSON.stringify(DB)); } catch(e) {}
-   }
-function loadFromStorage() {
-  try {
-    const d = localStorage.getItem('hoopdb_v1');
-    if (d) DB = JSON.parse(d);
-  } catch(e) {}
+  try { localStorage.setItem('hoopdb_v1', JSON.stringify(DB)); } catch(e) {}
 }
 
 // ===== NAVIGATION =====
