@@ -1187,7 +1187,18 @@ function fmt(v) { return v != null && v !== '' ? parseFloat(v).toFixed(1) : '—
 function fmtPct(v) { return v != null && v !== '' && v > 0 ? parseFloat(v).toFixed(1)+'%' : '—'; }
 
 // ===== START =====
-init();
+window.addPlayers   = addPlayers;
+window.autoLoadData = autoLoadData;
+window.filterPlayers = filterPlayers;
+window.switchView   = switchView;
+window.openPlayer   = openPlayer;
+window.setSort      = setSort;
+window.closeModal   = closeModal;
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', () => init().catch(console.error));
+} else {
+  init().catch(console.error);
+}
 </script>
 </body>
 </html>
