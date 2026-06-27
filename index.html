@@ -540,10 +540,10 @@ function renderLeagueSidebar() {
   wrap.innerHTML = LEAGUES.map(l => {
     const cnt = leagueCounts[l.id] || 0;
     return `<div class="league-chip ${selectedLeague===l.id?'active':''}" onclick="filterByLeague('${l.id}')">
-      <div class="league-dot" style="background:${l.color}"></div>
+      <div class="league-dot" style="background:${l.color}"><\/div>
       ${l.id}
-      <span class="league-count">${cnt}</span>
-    </div>`;
+      <span class="league-count">${cnt}<\/span>
+    <\/div>`;
   }).join('');
 }
 
@@ -559,7 +559,7 @@ function filterByLeague(id) {
 function renderLeaguePills() {
   const wrap = document.getElementById('import-league-pills');
   wrap.innerHTML = LEAGUES.map(l =>
-    `<div class="league-pill ${importLeague===l.id?'selected':''}" style="${importLeague===l.id?`background:${l.color};border-color:${l.color};`:''}" onclick="selectImportLeague('${l.id}', '${l.color}', this)">${l.id}</div>`
+    `<div class="league-pill ${importLeague===l.id?'selected':''}" style="${importLeague===l.id?`background:${l.color};border-color:${l.color};`:''}" onclick="selectImportLeague('${l.id}', '${l.color}', this)">${l.id}<\/div>`
   ).join('');
 }
 
@@ -582,10 +582,10 @@ function renderFetchGrid() {
   const grid = document.getElementById('fetch-grid');
   grid.innerHTML = LEAGUES.map(l =>
     `<div class="league-fetch-card" id="lfc-${l.id.replace(/\s/g,'_')}">
-      <div class="lfc-name" style="color:${l.color}">${l.id}</div>
-      <div class="lfc-status"><div class="status-dot s-idle" id="dot-${l.id.replace(/\s/g,'_')}"></div><span id="status-${l.id.replace(/\s/g,'_')}">Idle</span></div>
-      <div class="lfc-count" id="cnt-${l.id.replace(/\s/g,'_')}"></div>
-    </div>`
+      <div class="lfc-name" style="color:${l.color}">${l.id}<\/div>
+      <div class="lfc-status"><div class="status-dot s-idle" id="dot-${l.id.replace(/\s/g,'_')}"><\/div><span id="status-${l.id.replace(/\s/g,'_')}">Idle<\/span><\/div>
+      <div class="lfc-count" id="cnt-${l.id.replace(/\s/g,'_')}"><\/div>
+    <\/div>`
   ).join('');
 }
 
@@ -617,7 +617,7 @@ function renderDashboard() {
   const sorted = [...DB.players].sort((a,b)=>(b.pts||0)-(a.pts||0)).slice(0,10);
   const wrap = document.getElementById('dashboard-table-body');
   if (!sorted.length) {
-    wrap.innerHTML = `<div class="empty-state"><div class="icon">🏀</div><h3>No data yet</h3><p>Click "Fetch Data" to load player statistics from all leagues, or use Import to add data manually.</p><button class="btn btn-primary" onclick="showScraper()">Get Started</button></div>`;
+    wrap.innerHTML = `<div class="empty-state"><div class="icon">🏀<\/div><h3>No data yet<\/h3><p>Click "Fetch Data" to load player statistics from all leagues, or use Import to add data manually.<\/p><button class="btn btn-primary" onclick="showScraper()">Get Started<\/button><\/div>`;
     return;
   }
   wrap.innerHTML = renderTable(sorted, false);
@@ -659,7 +659,7 @@ function renderPlayerTable() {
   const wrap = document.getElementById('players-table-body');
 
   if (!page.length) {
-    wrap.innerHTML = `<div class="empty-state"><div class="icon">🔍</div><h3>No players found</h3><p>Try adjusting your filters or import data first.</p></div>`;
+    wrap.innerHTML = `<div class="empty-state"><div class="icon">🔍<\/div><h3>No players found<\/h3><p>Try adjusting your filters or import data first.<\/p><\/div>`;
     document.getElementById('pagination').innerHTML = '';
     return;
   }
@@ -670,19 +670,19 @@ function renderPlayerTable() {
 function renderTable(players, showRank) {
   return `<table>
     <thead><tr>
-      ${showRank?'<th>#</th>':''}
-      <th>Player</th>
-      <th onclick="setSort('league')" class="${sortCol==='league'?'sorted':''}">League${sortCol==='league'?'<span class="sort-arrow">↓</span>':''}</th>
-      <th onclick="setSort('pts')" class="${sortCol==='pts'?'sorted':''}">PTS${sortCol==='pts'?'<span class="sort-arrow">↓</span>':''}</th>
-      <th onclick="setSort('reb')" class="${sortCol==='reb'?'sorted':''}">REB${sortCol==='reb'?'<span class="sort-arrow">↓</span>':''}</th>
-      <th onclick="setSort('ast')" class="${sortCol==='ast'?'sorted':''}">AST${sortCol==='ast'?'<span class="sort-arrow">↓</span>':''}</th>
-      <th onclick="setSort('min')" class="${sortCol==='min'?'sorted':''}">MIN${sortCol==='min'?'<span class="sort-arrow">↓</span>':''}</th>
-      <th onclick="setSort('fg_pct')" class="${sortCol==='fg_pct'?'sorted':''}">FG%${sortCol==='fg_pct'?'<span class="sort-arrow">↓</span>':''}</th>
-      <th onclick="setSort('three_pct')" class="${sortCol==='three_pct'?'sorted':''}">3P%${sortCol==='three_pct'?'<span class="sort-arrow">↓</span>':''}</th>
-      <th onclick="setSort('stl')" class="${sortCol==='stl'?'sorted':''}">STL${sortCol==='stl'?'<span class="sort-arrow">↓</span>':''}</th>
-      <th onclick="setSort('blk')" class="${sortCol==='blk'?'sorted':''}">BLK${sortCol==='blk'?'<span class="sort-arrow">↓</span>':''}</th>
-      <th>GP</th>
-    </tr></thead>
+      ${showRank?'<th>#<\/th>':''}
+      <th>Player<\/th>
+      <th onclick="setSort('league')" class="${sortCol==='league'?'sorted':''}">League${sortCol==='league'?'<span class="sort-arrow">↓<\/span>':''}<\/th>
+      <th onclick="setSort('pts')" class="${sortCol==='pts'?'sorted':''}">PTS${sortCol==='pts'?'<span class="sort-arrow">↓<\/span>':''}<\/th>
+      <th onclick="setSort('reb')" class="${sortCol==='reb'?'sorted':''}">REB${sortCol==='reb'?'<span class="sort-arrow">↓<\/span>':''}<\/th>
+      <th onclick="setSort('ast')" class="${sortCol==='ast'?'sorted':''}">AST${sortCol==='ast'?'<span class="sort-arrow">↓<\/span>':''}<\/th>
+      <th onclick="setSort('min')" class="${sortCol==='min'?'sorted':''}">MIN${sortCol==='min'?'<span class="sort-arrow">↓<\/span>':''}<\/th>
+      <th onclick="setSort('fg_pct')" class="${sortCol==='fg_pct'?'sorted':''}">FG%${sortCol==='fg_pct'?'<span class="sort-arrow">↓<\/span>':''}<\/th>
+      <th onclick="setSort('three_pct')" class="${sortCol==='three_pct'?'sorted':''}">3P%${sortCol==='three_pct'?'<span class="sort-arrow">↓<\/span>':''}<\/th>
+      <th onclick="setSort('stl')" class="${sortCol==='stl'?'sorted':''}">STL${sortCol==='stl'?'<span class="sort-arrow">↓<\/span>':''}<\/th>
+      <th onclick="setSort('blk')" class="${sortCol==='blk'?'sorted':''}">BLK${sortCol==='blk'?'<span class="sort-arrow">↓<\/span>':''}<\/th>
+      <th>GP<\/th>
+    <\/tr><\/thead>
     <tbody>
     ${players.map((p, i) => {
       const idx = showRank ? (currentPage-1)*PAGE_SIZE + i + 1 : i+1;
@@ -691,32 +691,32 @@ function renderTable(players, showRank) {
       const lcolor = leagueInfo?.color || '#888';
       const posClass = p.position?.includes('G')?'G':p.position?.includes('F')?p.position==='PF'?'PF':'F':p.position==='C'?'C':'G';
       return `<tr onclick="openPlayer('${p.playerCode}')" style="cursor:pointer;">`
-        ${showRank?`<td style="color:var(--text3);font-size:12px;">${idx}</td>`:''}
+        ${showRank?`<td style="color:var(--text3);font-size:12px;">${idx}<\/td>`:''}
         <td>
           <div class="player-cell">
             <div class="player-avatar">
               ${p.img ? `<img src="${p.img}" alt="${p.name}" onerror="this.style.display='none';this.parentElement.textContent='${initials}'">` : initials}
-            </div>
+            <\/div>
             <div>
-              <div class="player-info-name">${p.name}</div>
-              <div class="player-info-sub">${p.team || ''}</div>
-            </div>
-          </div>
-        </td>
-        <td><span class="league-tag" style="background:${lcolor}22;color:${lcolor};border:1px solid ${lcolor}44;">${p.league}</span></td>
-        <td class="${(p.pts||0)>=20?'val-great':(p.pts||0)>=15?'val-good':'val-avg'}">${fmt(p.pts)}</td>
-        <td class="${(p.reb||0)>=8?'val-great':(p.reb||0)>=5?'val-good':'val-avg'}">${fmt(p.reb)}</td>
-        <td class="${(p.ast||0)>=6?'val-great':(p.ast||0)>=4?'val-good':'val-avg'}">${fmt(p.ast)}</td>
-        <td class="val-avg">${fmt(p.min)}</td>
-        <td class="${(p.fg_pct||0)>=50?'val-great':(p.fg_pct||0)>=45?'val-good':'val-avg'}">${fmtPct(p.fg_pct)}</td>
-        <td class="${(p.three_pct||0)>=38?'val-great':(p.three_pct||0)>=35?'val-good':'val-avg'}">${fmtPct(p.three_pct)}</td>
-        <td>${fmt(p.stl)}</td>
-        <td>${fmt(p.blk)}</td>
-        <td class="val-muted">${p.gp||'—'}</td>
-      </tr>`;
+              <div class="player-info-name">${p.name}<\/div>
+              <div class="player-info-sub">${p.team || ''}<\/div>
+            <\/div>
+          <\/div>
+        <\/td>
+        <td><span class="league-tag" style="background:${lcolor}22;color:${lcolor};border:1px solid ${lcolor}44;">${p.league}<\/span><\/td>
+        <td class="${(p.pts||0)>=20?'val-great':(p.pts||0)>=15?'val-good':'val-avg'}">${fmt(p.pts)}<\/td>
+        <td class="${(p.reb||0)>=8?'val-great':(p.reb||0)>=5?'val-good':'val-avg'}">${fmt(p.reb)}<\/td>
+        <td class="${(p.ast||0)>=6?'val-great':(p.ast||0)>=4?'val-good':'val-avg'}">${fmt(p.ast)}<\/td>
+        <td class="val-avg">${fmt(p.min)}<\/td>
+        <td class="${(p.fg_pct||0)>=50?'val-great':(p.fg_pct||0)>=45?'val-good':'val-avg'}">${fmtPct(p.fg_pct)}<\/td>
+        <td class="${(p.three_pct||0)>=38?'val-great':(p.three_pct||0)>=35?'val-good':'val-avg'}">${fmtPct(p.three_pct)}<\/td>
+        <td>${fmt(p.stl)}<\/td>
+        <td>${fmt(p.blk)}<\/td>
+        <td class="val-muted">${p.gp||'—'}<\/td>
+      <\/tr>`;
     }).join('')}
-    </tbody>
-  </table>`;
+    <\/tbody>
+  <\/table>`;
 }
 
 function setSort(col) {
@@ -731,12 +731,12 @@ function renderPagination() {
   const total = Math.ceil(filteredPlayers.length / PAGE_SIZE);
   if (total <= 1) { document.getElementById('pagination').innerHTML = ''; return; }
   let html = '';
-  if (currentPage > 1) html += `<button class="page-btn" onclick="goPage(${currentPage-1})">←</button>`;
+  if (currentPage > 1) html += `<button class="page-btn" onclick="goPage(${currentPage-1})">←<\/button>`;
   for (let i = Math.max(1,currentPage-2); i <= Math.min(total,currentPage+2); i++) {
-    html += `<button class="page-btn ${i===currentPage?'active':''}" onclick="goPage(${i})">${i}</button>`;
+    html += `<button class="page-btn ${i===currentPage?'active':''}" onclick="goPage(${i})">${i}<\/button>`;
   }
-  if (currentPage < total) html += `<button class="page-btn" onclick="goPage(${currentPage+1})">→</button>`;
-  html += `<span class="page-info">${filteredPlayers.length} players</span>`;
+  if (currentPage < total) html += `<button class="page-btn" onclick="goPage(${currentPage+1})">→<\/button>`;
+  html += `<span class="page-info">${filteredPlayers.length} players<\/span>`;
   document.getElementById('pagination').innerHTML = html;
 }
 
@@ -748,8 +748,8 @@ function populateFilters() {
   const teams = [...new Set(DB.players.map(p=>p.team))].sort();
   const leagueEl = document.getElementById('filter-league');
   const teamEl = document.getElementById('filter-team');
-  leagueEl.innerHTML = '<option value="">All Leagues</option>' + leagues.map(l=>`<option value="${l}">${l}</option>`).join('');
-  teamEl.innerHTML = '<option value="">All Teams</option>' + teams.map(t=>`<option value="${t}">${t}</option>`).join('');
+  leagueEl.innerHTML = '<option value="">All Leagues<\/option>' + leagues.map(l=>`<option value="${l}">${l}<\/option>`).join('');
+  teamEl.innerHTML = '<option value="">All Teams<\/option>' + teams.map(t=>`<option value="${t}">${t}<\/option>`).join('');
 }
 
 // ===== PLAYER MODAL =====
@@ -763,41 +763,41 @@ function openPlayer(playerCode) {
   const maxAst = Math.max(...DB.players.map(x=>x.ast||0),1);
 
   const hero = `<div class="modal-hero">
-      <div class="modal-avatar">${p.img ? `<img src="${p.img}" alt="${p.name}" onerror="this.style.display='none';this.parentElement.textContent='${initials}'">` : initials}</div>
+      <div class="modal-avatar">${p.img ? `<img src="${p.img}" alt="${p.name}" onerror="this.style.display='none';this.parentElement.textContent='${initials}'">` : initials}<\/div>
       <div style="flex:1">
-        <div class="modal-player-name">${p.name||'—'}</div>
-        <div class="modal-player-meta">${p.team||'—'} · ${p.nationality||''}${p.birthDate?' · b. '+p.birthDate.slice(0,4):''}</div>
+        <div class="modal-player-name">${p.name||'—'}<\/div>
+        <div class="modal-player-meta">${p.team||'—'} · ${p.nationality||''}${p.birthDate?' · b. '+p.birthDate.slice(0,4):''}<\/div>
         <div class="modal-tags" style="margin-top:8px">
-          <span class="tag tag-pos">${p.position||'?'}</span>
-          <span class="tag tag-team">🏟 ${p.team||'—'}</span>
-          <span class="tag tag-league" style="background:${lcolor}22;color:${lcolor};border:1px solid ${lcolor}44">${p.league||''}</span>
-          ${p.height?`<span class="tag tag-team">📏 ${p.height}</span>`:''}
-          ${p.dorsal?`<span class="tag tag-team">#${p.dorsal}</span>`:''}
-        </div>
-      </div></div>`;
+          <span class="tag tag-pos">${p.position||'?'}<\/span>
+          <span class="tag tag-team">🏟 ${p.team||'—'}<\/span>
+          <span class="tag tag-league" style="background:${lcolor}22;color:${lcolor};border:1px solid ${lcolor}44">${p.league||''}<\/span>
+          ${p.height?`<span class="tag tag-team">📏 ${p.height}<\/span>`:''}
+          ${p.dorsal?`<span class="tag tag-team">#${p.dorsal}<\/span>`:''}
+        <\/div>
+      <\/div><\/div>`;
 
   const keyBar = `<div class="modal-stats-grid">
-    <div class="modal-stat-cell"><div class="modal-stat-val v-green">${fmt(p.pts)}</div><div class="modal-stat-lbl">PPG</div></div>
-    <div class="modal-stat-cell"><div class="modal-stat-val v-accent">${fmt(p.reb)}</div><div class="modal-stat-lbl">RPG</div></div>
-    <div class="modal-stat-cell"><div class="modal-stat-val v-amber">${fmt(p.ast)}</div><div class="modal-stat-lbl">APG</div></div>
-    <div class="modal-stat-cell"><div class="modal-stat-val v-purple">${fmt(p.stl)}</div><div class="modal-stat-lbl">SPG</div></div>
-    <div class="modal-stat-cell"><div class="modal-stat-val">${fmt(p.blk)}</div><div class="modal-stat-lbl">BPG</div></div>
-  </div>`;
+    <div class="modal-stat-cell"><div class="modal-stat-val v-green">${fmt(p.pts)}<\/div><div class="modal-stat-lbl">PPG<\/div><\/div>
+    <div class="modal-stat-cell"><div class="modal-stat-val v-accent">${fmt(p.reb)}<\/div><div class="modal-stat-lbl">RPG<\/div><\/div>
+    <div class="modal-stat-cell"><div class="modal-stat-val v-amber">${fmt(p.ast)}<\/div><div class="modal-stat-lbl">APG<\/div><\/div>
+    <div class="modal-stat-cell"><div class="modal-stat-val v-purple">${fmt(p.stl)}<\/div><div class="modal-stat-lbl">SPG<\/div><\/div>
+    <div class="modal-stat-cell"><div class="modal-stat-val">${fmt(p.blk)}<\/div><div class="modal-stat-lbl">BPG<\/div><\/div>
+  <\/div>`;
 
   const sCell = (lbl,made,att,pct,clr) => {
     const v = pct!==undefined&&pct!==null ? pct : (att>0?Math.round(made/att*1000)/10:0);
     const vn = parseFloat(v)||0;
-    return `<div class="shoot-cell"><div class="shoot-cell-label">${lbl}</div>
-      <div class="shoot-cell-val" style="color:${clr}">${isNaN(vn)?'—':vn.toFixed(1)}%</div>
-      <div class="shoot-cell-sub">${made!=null?made:'—'}/${att!=null?att:'—'}</div>
-      <div class="shoot-bar-wrap"><div class="shoot-bar" style="width:${Math.min(vn,100)}%;background:${clr}"></div></div></div>`;
+    return `<div class="shoot-cell"><div class="shoot-cell-label">${lbl}<\/div>
+      <div class="shoot-cell-val" style="color:${clr}">${isNaN(vn)?'—':vn.toFixed(1)}%<\/div>
+      <div class="shoot-cell-sub">${made!=null?made:'—'}/${att!=null?att:'—'}<\/div>
+      <div class="shoot-bar-wrap"><div class="shoot-bar" style="width:${Math.min(vn,100)}%;background:${clr}"><\/div><\/div><\/div>`;
   };
 
   const efg = p.fga>0?Math.round(((p.fgm||0)+.5*(p.fg3m||0))/(p.fga)*1000)/10:0;
   const ts  = (p.fga||0)+.44*(p.fta||0)>0?Math.round((p.pts_total||0)/(2*((p.fga||0)+.44*(p.fta||0)))*1000)/10:0;
 
   const overview = `<div class="modal-tab-content active" id="tab-overview-${playerCode}">
-    <div class="modal-section"><h4>Shooting Splits</h4>
+    <div class="modal-section"><h4>Shooting Splits<\/h4>
       <div class="shoot-grid">
         ${sCell('FG%',p.fgm,p.fga,p.fg_pct,'var(--green)')}
         ${sCell('2P%',p.fg2m,p.fg2a,p.fg2_pct,'var(--accent)')}
@@ -805,9 +805,9 @@ function openPlayer(playerCode) {
         ${sCell('FT%',p.ftm,p.fta,p.ft_pct,'var(--purple)')}
         ${sCell('eFG%',null,null,efg,'var(--teal)')}
         ${sCell('TS%',null,null,ts,'var(--text2)')}
-      </div>
-    </div>
-    <div class="modal-section"><h4>Season Totals</h4>
+      <\/div>
+    <\/div>
+    <div class="modal-section"><h4>Season Totals<\/h4>
       <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px">
         ${infoCell('GP',p.gp||'—')} ${infoCell('GS',p.gs||'—')}
         ${infoCell('Min Total',p.min_total||'—')} ${infoCell('Points',p.pts_total||'—')}
@@ -815,25 +815,25 @@ function openPlayer(playerCode) {
         ${infoCell('Steals',p.stl_total||'—')} ${infoCell('Blocks',p.blk_total||'—')}
         ${infoCell('Turnovers',p.to_total||'—')} ${infoCell('PIR',p.pir_total||'—')}
         ${infoCell('FC',p.fc_total||'—')} ${infoCell('FD',p.fd_total||'—')}
-      </div>
-    </div>
-    <div class="modal-section"><h4>Per Game Averages</h4>
+      <\/div>
+    <\/div>
+    <div class="modal-section"><h4>Per Game Averages<\/h4>
       ${miniBar('Points',p.pts,maxPts,'var(--green)')}
       ${miniBar('Rebounds',p.reb,maxReb,'var(--accent)')}
       ${miniBar('Assists',p.ast,maxAst,'var(--amber)')}
       ${miniBar('Steals',p.stl,3,'var(--purple)')}
       ${miniBar('Blocks',p.blk,3,'var(--teal)')}
       ${miniBar('PIR',p.pir,30,'var(--text2)')}
-    </div>
-    <div class="modal-section"><h4>Advanced</h4>
+    <\/div>
+    <div class="modal-section"><h4>Advanced<\/h4>
       <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px">
         ${infoCell('EFF',calcEFF(p))} ${infoCell('TS%',ts+'%')}
         ${infoCell('AST/TO',p.to?((p.ast||0)/(p.to||1)).toFixed(1):'—')}
         ${infoCell('OREB/G',fmt(p.oreb))} ${infoCell('DREB/G',fmt(p.dreb))}
         ${infoCell('FC/G',fmt(p.fc))}
-      </div>
-    </div>
-  </div>`;
+      <\/div>
+    <\/div>
+  <\/div>`;
 
   const games = p.gamelog || [];
   const glRows = games.map(g => {
@@ -845,37 +845,37 @@ function openPlayer(playerCode) {
     const pms  = pm!=null?(pm>0?'+':'')+pm:'—';
     const link = g.gameUrl?`https://www.euroleaguebasketball.net${g.gameUrl}`:'#';
     return `<tr>
-      <td><div class="gl-opp"><span class="gl-loc">${g.location==='home'?'vs':'@'}</span>
+      <td><div class="gl-opp"><span class="gl-loc">${g.location==='home'?'vs':'@'}<\/span>
         ${g.oppLogo?`<img src="${g.oppLogo}" alt="${g.opponent}" onerror="this.style.display='none'">`:''}
-        <a href="${link}" target="_blank" style="color:var(--text);text-decoration:none;font-weight:500">${g.opponent||'—'}</a>
-      </div></td>
-      <td>${g.min||'—'}</td><td class="${pc}">${g.pts??'—'}</td>
-      <td>${fg2s}</td><td>${fg3s}</td><td>${fts}</td>
-      <td>${g.reb??'—'}</td><td>${g.ast??'—'}</td><td>${g.stl??'—'}</td>
-      <td>${g.blk??'—'}</td><td>${g.to??'—'}</td>
-      <td>${g.pir??'—'}</td><td class="${pmc}">${pms}</td>
-    </tr>`;
+        <a href="${link}" target="_blank" style="color:var(--text);text-decoration:none;font-weight:500">${g.opponent||'—'}<\/a>
+      <\/div><\/td>
+      <td>${g.min||'—'}<\/td><td class="${pc}">${g.pts??'—'}<\/td>
+      <td>${fg2s}<\/td><td>${fg3s}<\/td><td>${fts}<\/td>
+      <td>${g.reb??'—'}<\/td><td>${g.ast??'—'}<\/td><td>${g.stl??'—'}<\/td>
+      <td>${g.blk??'—'}<\/td><td>${g.to??'—'}<\/td>
+      <td>${g.pir??'—'}<\/td><td class="${pmc}">${pms}<\/td>
+    <\/tr>`;
   }).join('');
 
   const gamelog = `<div class="modal-tab-content" id="tab-gamelog-${playerCode}">
     ${games.length===0
-      ? '<div style="text-align:center;padding:40px;color:var(--text3)">No game log data available</div>'
+      ? '<div style="text-align:center;padding:40px;color:var(--text3)">No game log data available<\/div>'
       : `<div class="gamelog-wrap"><table class="gamelog-table">
           <thead><tr>
-            <th style="text-align:left;min-width:100px">Opponent</th>
-            <th>MIN</th><th>PTS</th><th>2FG</th><th>3FG</th><th>FT</th>
-            <th>REB</th><th>AST</th><th>STL</th><th>BLK</th><th>TO</th><th>PIR</th><th>+/-</th>
-          </tr></thead>
-          <tbody>${glRows}</tbody>
-        </table></div>`}
-  </div>`;
+            <th style="text-align:left;min-width:100px">Opponent<\/th>
+            <th>MIN<\/th><th>PTS<\/th><th>2FG<\/th><th>3FG<\/th><th>FT<\/th>
+            <th>REB<\/th><th>AST<\/th><th>STL<\/th><th>BLK<\/th><th>TO<\/th><th>PIR<\/th><th>+/-<\/th>
+          <\/tr><\/thead>
+          <tbody>${glRows}<\/tbody>
+        <\/table><\/div>`}
+  <\/div>`;
 
   document.getElementById('modal-content').innerHTML =
     hero + keyBar +
     `<div class="modal-tabs">
-      <div class="modal-tab active" onclick="switchModalTab('overview','${playerCode}',this)">Overview</div>
-      <div class="modal-tab" onclick="switchModalTab('gamelog','${playerCode}',this)">Game Log${games.length?' ('+games.length+')':''}</div>
-    </div>` + overview + gamelog;
+      <div class="modal-tab active" onclick="switchModalTab('overview','${playerCode}',this)">Overview<\/div>
+      <div class="modal-tab" onclick="switchModalTab('gamelog','${playerCode}',this)">Game Log${games.length?' ('+games.length+')':''}<\/div>
+    <\/div>` + overview + gamelog;
 
   document.getElementById('modal-overlay').classList.add('open');
 }
@@ -890,25 +890,25 @@ function switchModalTab(tab, code, el) {
 function miniBar(label, val, max, color) {
   const pct = Math.min(100,((val||0)/max)*100);
   return `<div class="mini-stat-row">
-    <div class="mini-stat-lbl">${label}</div>
-    <div class="mini-stat-bar-wrap"><div class="mini-stat-bar" style="width:${pct}%;background:${color}"></div></div>
-    <div class="mini-stat-val">${fmt(val)}</div></div>`;
+    <div class="mini-stat-lbl">${label}<\/div>
+    <div class="mini-stat-bar-wrap"><div class="mini-stat-bar" style="width:${pct}%;background:${color}"><\/div><\/div>
+    <div class="mini-stat-val">${fmt(val)}<\/div><\/div>`;
 }
 
 function infoCell(label, val) {
   return `<div style="background:var(--surface2);border-radius:6px;padding:8px 10px;">
-    <div style="font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:.5px">${label}</div>
-    <div style="font-size:15px;font-weight:600;margin-top:2px">${val}</div></div>`;
+    <div style="font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:.5px">${label}<\/div>
+    <div style="font-size:15px;font-weight:600;margin-top:2px">${val}<\/div><\/div>`;
 }
 
 function closeModal() { document.getElementById('modal-overlay').classList.remove('open'); }
 
 // ===== COMPARE =====
 function populateCompareDropdowns() {
-  const opts = DB.players.map((p,i) => `<option value="${i}">${p.name} (${p.team})</option>`).join('');
+  const opts = DB.players.map((p,i) => `<option value="${i}">${p.name} (${p.team})<\/option>`).join('');
   ['compare-p1','compare-p2'].forEach(id => {
     const el = document.getElementById(id);
-    el.innerHTML = '<option value="">Select player...</option>' + opts;
+    el.innerHTML = '<option value="">Select player...<\/option>' + opts;
   });
 }
 
@@ -941,27 +941,27 @@ function updateCompare() {
       <div class="compare-card-header">
         <div class="player-avatar" style="width:44px;height:44px;background:${color}22;color:${color};font-size:15px;">
           ${p.img ? `<img src="${p.img}" alt="${p.name}" style="width:100%;height:100%;object-fit:cover;" onerror="this.style.display='none';this.parentElement.textContent='${init}'">` : init}
-        </div>
+        <\/div>
         <div>
-          <div style="font-weight:600;font-size:14px;">${p.name}</div>
-          <div style="font-size:12px;color:var(--text3);">${p.team} · <span style="color:${color}">${p.league}</span></div>
-        </div>
-      </div>
+          <div style="font-weight:600;font-size:14px;">${p.name}<\/div>
+          <div style="font-size:12px;color:var(--text3);">${p.team} · <span style="color:${color}">${p.league}<\/span><\/div>
+        <\/div>
+      <\/div>
       ${stats.map(s => {
         const v1 = p1[s.key]||0, v2 = p2[s.key]||0;
         const val = p === p1 ? v1 : v2;
         const pct = Math.min(100, (val/s.max)*100);
         const winner = (p === p1 && v1 >= v2) || (p === p2 && v2 >= v1);
         return `<div class="compare-stat-row">
-          <div class="csr-label" style="font-size:11px;color:var(--text3)">${s.label}</div>
-          <div class="csr-bar-wrap"><div class="csr-bar" style="width:${pct}%;background:${winner?color:'var(--surface3)'};left:0;"></div></div>
-          <div class="csr-val" style="color:${winner?color:'var(--text3)'};">${val}</div>
-        </div>`;
+          <div class="csr-label" style="font-size:11px;color:var(--text3)">${s.label}<\/div>
+          <div class="csr-bar-wrap"><div class="csr-bar" style="width:${pct}%;background:${winner?color:'var(--surface3)'};left:0;"><\/div><\/div>
+          <div class="csr-val" style="color:${winner?color:'var(--text3)'};">${val}<\/div>
+        <\/div>`;
       }).join('')}
-    </div>`;
+    <\/div>`;
   }
 
-  out.innerHTML = `<div class="compare-layout">${cmpCard(p1,c1)}${cmpCard(p2,c2)}</div>`;
+  out.innerHTML = `<div class="compare-layout">${cmpCard(p1,c1)}${cmpCard(p2,c2)}<\/div>`;
 }
 
 // ===== ADVANCED METRICS =====
@@ -981,7 +981,7 @@ function calcTS(p) {
 
 function renderAdvanced() {
   if (!DB.players.length) {
-    document.getElementById('advanced-grid').innerHTML = `<div class="empty-state"><div class="icon">🧮</div><h3>No data yet</h3><p>Import player data first to see advanced metrics.</p></div>`;
+    document.getElementById('advanced-grid').innerHTML = `<div class="empty-state"><div class="icon">🧮<\/div><h3>No data yet<\/h3><p>Import player data first to see advanced metrics.<\/p><\/div>`;
     return;
   }
   const players = DB.players;
@@ -994,18 +994,18 @@ function renderAdvanced() {
 
   function topCard(title, desc, players_list, valFn, label) {
     return `<div class="metric-card">
-      <h4>${title}</h4>
-      <div class="desc">${desc}</div>
+      <h4>${title}<\/h4>
+      <div class="desc">${desc}<\/div>
       ${players_list.slice(0,5).map((p,i) => {
         const val = valFn(p);
         const colors = ['var(--amber)','var(--text)','var(--text)','var(--text2)','var(--text3)'];
         return `<div style="display:flex;align-items:center;gap:8px;padding:5px 0;border-bottom:1px solid var(--border);">
-          <span style="font-size:11px;color:var(--text3);width:16px;">${i+1}</span>
-          <div style="flex:1;font-size:13px;">${p.name} <span style="font-size:11px;color:var(--text3)">${p.team}</span></div>
-          <span style="font-weight:600;color:${colors[i]};font-size:14px;">${val}${label}</span>
-        </div>`;
+          <span style="font-size:11px;color:var(--text3);width:16px;">${i+1}<\/span>
+          <div style="flex:1;font-size:13px;">${p.name} <span style="font-size:11px;color:var(--text3)">${p.team}<\/span><\/div>
+          <span style="font-weight:600;color:${colors[i]};font-size:14px;">${val}${label}<\/span>
+        <\/div>`;
       }).join('')}
-    </div>`;
+    <\/div>`;
   }
 
   document.getElementById('advanced-grid').innerHTML =
