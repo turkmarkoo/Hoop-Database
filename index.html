@@ -517,6 +517,18 @@ async function autoLoadData() {
  function saveToStorage() {
   try { localStorage.setItem('hoopdb_v1', JSON.stringify(DB)); } catch(e) {}
 }
+function loadFromStorage() {
+  try {
+    const saved = localStorage.getItem('hoopdb_v1');
+    if (saved) {
+      const parsed = JSON.parse(saved);
+      if (parsed && parsed.players && parsed.players.length > 0) {
+        DB = parsed;
+      }
+    }
+  } catch(e) {}
+}
+
 
 // ===== NAVIGATION =====
 function switchView(id, el) {
