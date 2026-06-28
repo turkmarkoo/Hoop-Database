@@ -1,1 +1,1232 @@
+<!DOCTYPE html>
+<!-- HoopDB v3 ts:1782583337157 -->
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Basketball Stats Database</title>
+<style>
+  :root {
+    --bg: #0f1117;
+    --surface: #1a1d27;
+    --surface2: #222535;
+    --surface3: #2a2e42;
+    --border: rgba(255,255,255,0.08);
+    --border2: rgba(255,255,255,0.14);
+    --text: #e8eaf0;
+    --text2: #8b8fa8;
+    --text3: #565a73;
+    --accent: #4f7ef5;
+    --accent2: #3a5fd4;
+    --green: #3ecf7a;
+    --amber: #f5a623;
+    --red: #f05050;
+    --purple: #9b6dff;
+    --teal: #1fd8c5;
+    --font: 'Inter', -apple-system, sans-serif;
+    --mono: 'JetBrains Mono', monospace;
+    --radius: 8px;
+    --radius2: 12px;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: var(--bg); color: var(--text); font-family: var(--font); font-size: 14px; line-height: 1.5; overflow-x: hidden; }
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
 
+  /* Layout */
+  #app { display: flex; height: 100vh; }
+  #sidebar { width: 240px; background: var(--surface); border-right: 1px solid var(--border); display: flex; flex-direction: column; flex-shrink: 0; overflow-y: auto; }
+  #main { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
+
+  /* Sidebar */
+  .sidebar-header { padding: 16px; border-bottom: 1px solid var(--border); }
+  .sidebar-header h1 { font-size: 15px; font-weight: 700; color: var(--text); letter-spacing: -0.3px; }
+  .sidebar-header p { font-size: 11px; color: var(--text3); margin-top: 2px; }
+  .sidebar-logo { display: flex; align-items: center; gap: 8px; margin-bottom: 6px; }
+  .ball-icon { width: 24px; height: 24px; background: linear-gradient(135deg, var(--amber), #e07b00); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 14px; flex-shrink: 0; }
+
+  .sidebar-section { padding: 8px 0; }
+  .sidebar-label { font-size: 10px; font-weight: 600; color: var(--text3); text-transform: uppercase; letter-spacing: 0.8px; padding: 4px 16px 2px; }
+  .nav-item { display: flex; align-items: center; gap: 8px; padding: 7px 16px; cursor: pointer; transition: background 0.12s; font-size: 13px; color: var(--text2); border-radius: 0; position: relative; }
+  .nav-item:hover { background: rgba(255,255,255,0.04); color: var(--text); }
+  .nav-item.active { background: rgba(79,126,245,0.12); color: var(--accent); }
+  .nav-item.active::before { content: ''; position: absolute; left: 0; top: 0; bottom: 0; width: 2px; background: var(--accent); border-radius: 0 2px 2px 0; }
+  .nav-icon { font-size: 14px; width: 16px; text-align: center; }
+  .nav-badge { margin-left: auto; background: var(--surface3); color: var(--text2); font-size: 10px; padding: 1px 6px; border-radius: 10px; font-weight: 500; }
+  .nav-badge.new { background: rgba(79,126,245,0.2); color: var(--accent); }
+
+  .sidebar-leagues { padding: 0 8px 8px; }
+  .league-chip { display: flex; align-items: center; gap: 6px; padding: 6px 8px; cursor: pointer; border-radius: var(--radius); font-size: 12px; color: var(--text2); transition: all 0.12s; }
+  .league-chip:hover { background: var(--surface2); color: var(--text); }
+  .league-chip.active { background: var(--surface3); color: var(--text); }
+  .league-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+  .league-count { margin-left: auto; font-size: 10px; color: var(--text3); }
+
+  /* Top bar */
+  #topbar { padding: 0 20px; height: 52px; border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: 12px; flex-shrink: 0; }
+  .topbar-title { font-size: 15px; font-weight: 600; flex: 1; }
+  .search-wrap { position: relative; }
+  .search-wrap input { background: var(--surface2); border: 1px solid var(--border2); color: var(--text); padding: 7px 12px 7px 32px; border-radius: var(--radius); font-size: 13px; width: 220px; outline: none; }
+  .search-wrap input:focus { border-color: var(--accent); }
+  .search-wrap input::placeholder { color: var(--text3); }
+  .search-icon { position: absolute; left: 10px; top: 50%; transform: translateY(-50%); color: var(--text3); font-size: 13px; }
+  .btn { padding: 7px 14px; border-radius: var(--radius); font-size: 13px; font-weight: 500; cursor: pointer; border: none; transition: all 0.12s; display: flex; align-items: center; gap: 6px; }
+  .btn-primary { background: var(--accent); color: #fff; }
+  .btn-primary:hover { background: var(--accent2); }
+  .btn-secondary { background: var(--surface2); color: var(--text); border: 1px solid var(--border2); }
+  .btn-secondary:hover { background: var(--surface3); }
+  .btn-ghost { background: transparent; color: var(--text2); }
+  .btn-ghost:hover { background: var(--surface2); color: var(--text); }
+
+  /* Content */
+  #content { flex: 1; overflow-y: auto; padding: 20px; }
+
+  /* Stats overview cards */
+  .stat-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 12px; margin-bottom: 20px; }
+  .stat-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius2); padding: 14px 16px; }
+  .stat-card-label { font-size: 11px; color: var(--text3); text-transform: uppercase; letter-spacing: 0.6px; font-weight: 500; }
+  .stat-card-value { font-size: 26px; font-weight: 700; margin: 4px 0 2px; letter-spacing: -0.5px; }
+  .stat-card-sub { font-size: 11px; color: var(--text3); }
+  .v-green { color: var(--green); }
+  .v-accent { color: var(--accent); }
+  .v-amber { color: var(--amber); }
+  .v-purple { color: var(--purple); }
+
+  /* Table */
+  .table-wrap { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius2); overflow: hidden; }
+  .table-header { padding: 12px 16px; border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: 10px; }
+  .table-header h3 { font-size: 13px; font-weight: 600; flex: 1; }
+  table { width: 100%; border-collapse: collapse; }
+  thead th { padding: 9px 12px; font-size: 10px; font-weight: 600; color: var(--text3); text-transform: uppercase; letter-spacing: 0.6px; text-align: left; border-bottom: 1px solid var(--border); background: var(--surface2); white-space: nowrap; cursor: pointer; user-select: none; }
+  thead th:hover { color: var(--text2); }
+  thead th.sorted { color: var(--accent); }
+  .sort-arrow { margin-left: 3px; opacity: 0.6; }
+  tbody tr { border-bottom: 1px solid var(--border); transition: background 0.1s; }
+  tbody tr:last-child { border-bottom: none; }
+  tbody tr:hover { background: rgba(255,255,255,0.025); }
+  tbody td { padding: 10px 12px; font-size: 13px; white-space: nowrap; }
+  .player-cell { display: flex; align-items: center; gap: 10px; min-width: 180px; }
+  .player-avatar { width: 32px; height: 32px; border-radius: 50%; object-fit: cover; background: var(--surface3); flex-shrink: 0; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 600; color: var(--text2); overflow: hidden; }
+  .player-avatar img { width: 100%; height: 100%; object-fit: cover; }
+  .player-info-name { font-weight: 500; font-size: 13px; color: var(--text); }
+  .player-info-sub { font-size: 11px; color: var(--text3); }
+  .pos-badge { display: inline-block; font-size: 10px; font-weight: 600; padding: 2px 6px; border-radius: 4px; }
+  .pos-G { background: rgba(79,126,245,0.15); color: #7aa3f7; }
+  .pos-F { background: rgba(62,207,122,0.15); color: #60d98a; }
+  .pos-C { background: rgba(155,109,255,0.15); color: #b794ff; }
+  .pos-GF { background: rgba(245,166,35,0.15); color: #f7bc5a; }
+  .pos-PF { background: rgba(240,80,80,0.15); color: #f47575; }
+  .val-good { color: var(--green); font-weight: 500; }
+  .val-great { color: var(--teal); font-weight: 600; }
+  .val-avg { color: var(--text); }
+  .val-muted { color: var(--text3); }
+  .league-tag { font-size: 10px; padding: 2px 6px; border-radius: 4px; font-weight: 500; display: inline-block; }
+
+  /* Player detail modal */
+  #modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.7); z-index: 100; align-items: center; justify-content: center; }
+  #modal-overlay.open { display: flex; }
+  #modal { background: var(--surface); border: 1px solid var(--border2); border-radius: 16px; width: 680px; max-height: 85vh; overflow-y: auto; }
+  .modal-hero { padding: 24px; display: flex; gap: 20px; border-bottom: 1px solid var(--border); }
+  .modal-avatar { width: 80px; height: 80px; border-radius: 12px; object-fit: cover; background: var(--surface3); display: flex; align-items: center; justify-content: center; font-size: 28px; font-weight: 700; color: var(--text2); overflow: hidden; flex-shrink: 0; }
+  .modal-avatar img { width: 100%; height: 100%; object-fit: cover; }
+  .modal-player-name { font-size: 22px; font-weight: 700; letter-spacing: -0.4px; }
+  .modal-player-meta { font-size: 13px; color: var(--text2); margin-top: 4px; }
+  .modal-tags { display: flex; gap: 6px; margin-top: 10px; flex-wrap: wrap; }
+  .tag { padding: 3px 10px; border-radius: 20px; font-size: 11px; font-weight: 500; }
+  .tag-pos { background: rgba(79,126,245,0.15); color: #7aa3f7; border: 1px solid rgba(79,126,245,0.25); }
+  .tag-team { background: var(--surface2); color: var(--text2); border: 1px solid var(--border2); }
+  .tag-league { border: 1px solid; }
+  .modal-stats-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 1px; background: var(--border); border-top: 1px solid var(--border); }
+  .modal-stat-cell { background: var(--surface); padding: 14px 12px; text-align: center; }
+  .modal-stat-val { font-size: 20px; font-weight: 700; }
+  .modal-stat-lbl { font-size: 10px; color: var(--text3); text-transform: uppercase; letter-spacing: 0.5px; margin-top: 2px; }
+  .modal-section { padding: 16px 24px; border-bottom: 1px solid var(--border); }
+  .modal-section h4 { font-size: 11px; font-weight: 600; color: var(--text3); text-transform: uppercase; letter-spacing: 0.7px; margin-bottom: 12px; }
+  .mini-stat-row { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; }
+  .mini-stat-lbl { font-size: 12px; color: var(--text2); width: 140px; flex-shrink: 0; }
+  .mini-stat-bar-wrap { flex: 1; height: 6px; background: var(--surface3); border-radius: 3px; overflow: hidden; }
+  .mini-stat-bar { height: 100%; border-radius: 3px; background: var(--accent); }
+  .mini-stat-val { font-size: 12px; font-weight: 500; width: 40px; text-align: right; color: var(--text); }
+  .modal-close { position: absolute; top: 12px; right: 12px; background: var(--surface2); border: 1px solid var(--border2); color: var(--text2); width: 28px; height: 28px; border-radius: 50%; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 14px; }
+  .modal-inner { position: relative; }
+
+  /* Import modal */
+  #import-modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.7); z-index: 200; align-items: center; justify-content: center; }
+  #import-modal.open { display: flex; }
+  .import-box { background: var(--surface); border: 1px solid var(--border2); border-radius: 16px; width: 600px; padding: 24px; }
+  .import-box h2 { font-size: 16px; font-weight: 700; margin-bottom: 4px; }
+  .import-box p { font-size: 13px; color: var(--text2); margin-bottom: 16px; }
+  .league-pills { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 16px; }
+  .league-pill { padding: 5px 12px; border-radius: 20px; font-size: 12px; font-weight: 500; cursor: pointer; border: 1px solid var(--border2); color: var(--text2); background: var(--surface2); transition: all 0.12s; }
+  .league-pill.selected { color: #fff; border-color: transparent; }
+  textarea.import-ta { width: 100%; background: var(--surface2); border: 1px solid var(--border2); color: var(--text); border-radius: var(--radius); padding: 10px 12px; font-family: var(--mono); font-size: 12px; height: 180px; resize: vertical; outline: none; }
+  textarea.import-ta:focus { border-color: var(--accent); }
+  .import-actions { display: flex; gap: 8px; justify-content: flex-end; margin-top: 12px; }
+  .url-input-wrap { display: flex; gap: 8px; margin-bottom: 12px; }
+  .url-input-wrap input { flex: 1; background: var(--surface2); border: 1px solid var(--border2); color: var(--text); padding: 7px 12px; border-radius: var(--radius); font-size: 13px; outline: none; }
+  .url-input-wrap input:focus { border-color: var(--accent); }
+  .scrape-status { font-size: 12px; color: var(--text2); margin-bottom: 10px; padding: 8px 12px; background: var(--surface2); border-radius: var(--radius); display: none; }
+  .scrape-status.show { display: block; }
+  .scrape-status.error { color: var(--red); }
+  .scrape-status.success { color: var(--green); }
+
+  /* Views */
+  .view { display: none; }
+  .view.active { display: block; }
+
+  /* Filters */
+  .filter-bar { display: flex; gap: 8px; margin-bottom: 16px; flex-wrap: wrap; align-items: center; }
+  .filter-select { background: var(--surface2); border: 1px solid var(--border2); color: var(--text); padding: 6px 10px; border-radius: var(--radius); font-size: 13px; outline: none; cursor: pointer; }
+  .filter-select:focus { border-color: var(--accent); }
+  .active-filter-count { font-size: 12px; color: var(--text3); margin-left: auto; }
+
+  /* Compare view */
+  .compare-layout { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  .compare-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius2); overflow: hidden; }
+  .compare-card-header { padding: 16px; border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: 12px; }
+  .compare-stat-row { display: flex; align-items: center; padding: 8px 16px; border-bottom: 1px solid var(--border); }
+  .compare-stat-row:last-child { border-bottom: none; }
+  .csr-label { font-size: 12px; color: var(--text3); width: 80px; }
+  .csr-bar-wrap { flex: 1; height: 8px; background: var(--surface3); border-radius: 4px; margin: 0 10px; position: relative; }
+  .csr-bar { position: absolute; top: 0; height: 100%; border-radius: 4px; }
+  .csr-val { font-size: 12px; font-weight: 500; width: 40px; text-align: right; }
+
+  /* Tabs */
+  .tabs { display: flex; border-bottom: 1px solid var(--border); margin-bottom: 16px; }
+  .tab { padding: 8px 16px; font-size: 13px; color: var(--text2); cursor: pointer; border-bottom: 2px solid transparent; margin-bottom: -1px; transition: all 0.12s; }
+  .tab:hover { color: var(--text); }
+  .tab.active { color: var(--accent); border-bottom-color: var(--accent); }
+
+  /* Scraper progress */
+  .scraper-panel { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius2); padding: 20px; margin-bottom: 16px; }
+  .scraper-panel h3 { font-size: 14px; font-weight: 600; margin-bottom: 4px; }
+  .scraper-panel p { font-size: 12px; color: var(--text2); margin-bottom: 16px; }
+  .league-fetch-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+  .league-fetch-card { background: var(--surface2); border: 1px solid var(--border); border-radius: var(--radius); padding: 12px; }
+  .lfc-name { font-size: 12px; font-weight: 600; margin-bottom: 4px; }
+  .lfc-status { font-size: 11px; color: var(--text3); display: flex; align-items: center; gap: 4px; }
+  .status-dot { width: 6px; height: 6px; border-radius: 50%; }
+  .s-idle { background: var(--text3); }
+  .s-loading { background: var(--amber); animation: pulse 1s infinite; }
+  .s-ok { background: var(--green); }
+  .s-err { background: var(--red); }
+  @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.3} }
+  .lfc-count { font-size: 11px; color: var(--text3); margin-top: 4px; }
+
+  /* Advanced metrics */
+  .metrics-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 16px; }
+  .metric-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius2); padding: 16px; }
+  .metric-card h4 { font-size: 13px; font-weight: 600; margin-bottom: 2px; }
+  .metric-card .desc { font-size: 11px; color: var(--text3); margin-bottom: 12px; }
+
+  /* Pagination */
+  .pagination { display: flex; gap: 4px; align-items: center; justify-content: center; margin-top: 16px; }
+  .page-btn { padding: 5px 10px; background: var(--surface2); border: 1px solid var(--border); border-radius: var(--radius); font-size: 12px; cursor: pointer; color: var(--text2); transition: all 0.1s; }
+  .page-btn:hover { background: var(--surface3); color: var(--text); }
+  .page-btn.active { background: var(--accent); color: #fff; border-color: var(--accent); }
+  .page-info { font-size: 12px; color: var(--text3); padding: 0 8px; }
+
+  /* Scrollbar */
+  ::-webkit-scrollbar { width: 6px; height: 6px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: var(--surface3); border-radius: 3px; }
+
+  /* Responsive */
+  @media (max-width: 900px) { #sidebar { display: none; } }
+
+  .empty-state { text-align: center; padding: 60px 20px; color: var(--text3); }
+  .empty-state .icon { font-size: 40px; margin-bottom: 12px; }
+  .empty-state h3 { font-size: 16px; color: var(--text2); margin-bottom: 6px; }
+  .empty-state p { font-size: 13px; max-width: 340px; margin: 0 auto 16px; }
+
+  .modal-tabs{display:flex;border-bottom:1px solid var(--border);padding:0 24px}
+  .modal-tab{padding:10px 16px;font-size:13px;color:var(--text3);cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-1px;transition:all .12s;user-select:none}
+  .modal-tab:hover{color:var(--text)} .modal-tab.active{color:var(--accent);border-bottom-color:var(--accent)}
+  .modal-tab-content{display:none} .modal-tab-content.active{display:block}
+  .shoot-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:var(--border);border-radius:var(--radius);overflow:hidden;margin-bottom:12px}
+  .shoot-cell{background:var(--surface2);padding:10px 12px;text-align:center}
+  .shoot-cell-label{font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:.6px;margin-bottom:4px}
+  .shoot-cell-val{font-size:16px;font-weight:700}
+  .shoot-cell-sub{font-size:11px;color:var(--text3);margin-top:2px}
+  .shoot-bar-wrap{height:4px;background:var(--surface3);border-radius:2px;margin-top:6px;overflow:hidden}
+  .shoot-bar{height:100%;border-radius:2px}
+  .gamelog-wrap{overflow-x:auto;padding:0 24px 16px}
+  .gamelog-table{width:100%;border-collapse:collapse;font-size:12px}
+  .gamelog-table thead th{padding:7px 8px;font-size:10px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:.5px;background:var(--surface2);border-bottom:1px solid var(--border);white-space:nowrap;text-align:center}
+  .gamelog-table thead th:first-child{text-align:left}
+  .gamelog-table tbody tr{border-bottom:1px solid var(--border);transition:background .1s}
+  .gamelog-table tbody tr:hover{background:rgba(255,255,255,.03)}
+  .gamelog-table tbody td{padding:7px 8px;text-align:center;white-space:nowrap}
+  .gamelog-table tbody td:first-child{text-align:left}
+  .gl-opp{display:flex;align-items:center;gap:6px}
+  .gl-opp img{width:18px;height:18px;object-fit:contain}
+  .gl-loc{font-size:10px;color:var(--text3);width:16px}
+  .gl-pts-high{color:var(--green);font-weight:600} .gl-pts-ok{color:var(--text)} .gl-pts-low{color:var(--text3)}
+  .gl-plus{color:var(--green)} .gl-minus{color:var(--red)} .gl-zero{color:var(--text3)}
+
+
+  .mini-stat-bar-wrap{position:relative}
+  .avg-marker{position:absolute;top:-3px;bottom:-3px;width:2px;background:rgba(255,255,255,.85);border-radius:1px;box-shadow:0 0 4px rgba(0,0,0,.6);cursor:help}
+  .avg-marker::after{content:attr(title);position:absolute;bottom:130%;left:50%;transform:translateX(-50%);background:var(--surface);border:1px solid var(--border);color:var(--text);font-size:10px;padding:3px 7px;border-radius:4px;white-space:nowrap;opacity:0;pointer-events:none;transition:opacity .15s;z-index:20}
+  .avg-marker:hover::after{opacity:1}
+  .pct-badge{display:inline-block;font-size:9px;font-weight:700;padding:1px 5px;border-radius:3px;margin-left:6px;color:#fff;vertical-align:middle;letter-spacing:.3px}
+</style>
+</head>
+<body>
+<div id="app">
+  <!-- Sidebar -->
+  <div id="sidebar">
+    <div class="sidebar-header">
+      <div class="sidebar-logo">
+        <div class="ball-icon">🏀</div>
+        <div>
+          <h1>HoopDB</h1>
+        </div>
+      </div>
+      <p>Multi-League Statistics</p>
+    </div>
+
+    <div class="sidebar-section">
+      <div class="sidebar-label">Navigation</div>
+      <div class="nav-item active" data-view="dashboard" onclick="switchView('dashboard', this)">
+        <span class="nav-icon">📊</span> Dashboard
+      </div>
+      <div class="nav-item" data-view="players" onclick="switchView('players', this)">
+        <span class="nav-icon">👤</span> Players
+        <span class="nav-badge" id="player-count-badge">0</span>
+      </div>
+      <div class="nav-item" data-view="compare" onclick="switchView('compare', this)">
+        <span class="nav-icon">⚖️</span> Compare
+      </div>
+      <div class="nav-item" data-view="advanced" onclick="switchView('advanced', this)">
+        <span class="nav-icon">🧮</span> Advanced Metrics
+      </div>
+      <div class="nav-item" data-view="scraper" onclick="switchView('scraper', this)">
+        <span class="nav-icon">🔄</span> Import Data
+        <span class="nav-badge new">NEW</span>
+      </div>
+    </div>
+
+    <div class="sidebar-section">
+      <div class="sidebar-label">Leagues</div>
+      <div class="sidebar-leagues" id="league-sidebar"></div>
+    </div>
+  </div>
+
+  <!-- Main content -->
+  <div id="main">
+    <div id="topbar">
+      <div class="topbar-title" id="view-title">Dashboard</div>
+      <div class="search-wrap">
+        <span class="search-icon">🔍</span>
+        <input type="text" id="global-search" placeholder="Search players..." oninput="filterPlayers()">
+      </div>
+      <button class="btn btn-secondary" onclick="openImport()">⬆ Import</button>
+      <button class="btn btn-primary" onclick="showScraper()">🔄 Fetch Data</button>
+    </div>
+
+    <div id="content">
+
+      <!-- Dashboard View -->
+      <div id="view-dashboard" class="view active">
+        <div class="stat-grid" id="overview-cards">
+          <div class="stat-card"><div class="stat-card-label">Total Players</div><div class="stat-card-value v-accent" id="ov-players">0</div><div class="stat-card-sub">across all leagues</div></div>
+          <div class="stat-card"><div class="stat-card-label">Leagues</div><div class="stat-card-value v-green" id="ov-leagues">0</div><div class="stat-card-sub">competitions tracked</div></div>
+          <div class="stat-card"><div class="stat-card-label">Teams</div><div class="stat-card-value v-amber" id="ov-teams">0</div><div class="stat-card-sub">clubs in database</div></div>
+          <div class="stat-card"><div class="stat-card-label">Avg PPG</div><div class="stat-card-value v-purple" id="ov-ppg">—</div><div class="stat-card-sub">points per game</div></div>
+        </div>
+
+        <div class="table-wrap">
+          <div class="table-header">
+            <h3>🌟 Top Scorers</h3>
+            <button class="btn btn-ghost" onclick="switchView('players',document.querySelector('[data-view=players]'))">View all →</button>
+          </div>
+          <div id="dashboard-table-body"></div>
+        </div>
+      </div>
+
+      <!-- Players View -->
+      <div id="view-players" class="view">
+        <div class="filter-bar">
+          <select class="filter-select" id="filter-league" onchange="filterPlayers()">
+            <option value="">All Leagues</option>
+          </select>
+          <select class="filter-select" id="filter-team" onchange="filterPlayers()">
+            <option value="">All Teams</option>
+          </select>
+          <select class="filter-select" id="filter-pos" onchange="filterPlayers()">
+            <option value="">All Positions</option>
+            <option value="G">Guard</option>
+            <option value="F">Forward</option>
+            <option value="C">Center</option>
+          </select>
+          <select class="filter-select" id="sort-by" onchange="filterPlayers()">
+            <option value="pts">Sort: Points</option>
+            <option value="reb">Sort: Rebounds</option>
+            <option value="ast">Sort: Assists</option>
+            <option value="min">Sort: Minutes</option>
+            <option value="fg_pct">Sort: FG%</option>
+            <option value="three_pct">Sort: 3P%</option>
+          </select>
+          <span class="active-filter-count" id="filter-count"></span>
+        </div>
+        <div class="table-wrap">
+          <div id="players-table-body"></div>
+        </div>
+        <div class="pagination" id="pagination"></div>
+      </div>
+
+      <!-- Compare View -->
+      <div id="view-compare" class="view">
+        <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--radius2);padding:16px;margin-bottom:16px;">
+          <p style="font-size:13px;color:var(--text2);margin-bottom:12px;">Select two players to compare their stats</p>
+          <div style="display:flex;gap:10px;flex-wrap:wrap;">
+            <select class="filter-select" id="compare-p1" style="flex:1;" onchange="updateCompare()"><option value="">Player 1...</option></select>
+            <select class="filter-select" id="compare-p2" style="flex:1;" onchange="updateCompare()"><option value="">Player 2...</option></select>
+          </div>
+        </div>
+        <div id="compare-output"></div>
+      </div>
+
+      <!-- Advanced View -->
+      <div id="view-advanced" class="view">
+        <div class="metrics-grid" id="advanced-grid"></div>
+      </div>
+
+      <!-- Scraper View -->
+      <div id="view-scraper" class="view">
+        <div class="scraper-panel">
+          <h3>🔄 Fetch League Data</h3>
+          <p>Attempt to fetch player stats from league websites. CORS restrictions may prevent direct browser access — use the proxy or import JSON manually.</p>
+          <div class="league-fetch-grid" id="fetch-grid"></div>
+          <div style="margin-top:16px;display:flex;gap:8px;">
+            <button class="btn btn-primary" onclick="fetchAllLeagues()">Fetch All Leagues</button>
+            <button class="btn btn-secondary" onclick="loadSampleData()">Load Sample Data</button>
+          </div>
+        </div>
+
+        <div class="scraper-panel">
+          <h3>🔗 Fetch by URL</h3>
+          <p>Enter a team statistics URL from any supported league.</p>
+          <div class="url-input-wrap">
+            <input type="text" id="url-input" placeholder="https://www.aba-liga.com/team/43/25/1/0/borac-mozzart/">
+            <select class="filter-select" id="url-league-select">
+              <option value="ABA">ABA Liga</option>
+              <option value="Euroleague">Euroleague</option>
+              <option value="Eurocup">Eurocup</option>
+              <option value="FIBA CL">FIBA CL</option>
+              <option value="BBL">BBL</option>
+              <option value="ACB">ACB</option>
+            </select>
+            <button class="btn btn-primary" onclick="fetchByUrl()">Fetch</button>
+          </div>
+          <div class="scrape-status" id="scrape-status"></div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- Player Modal -->
+<div id="modal-overlay" onclick="e => { if(e.target===this) closeModal() }">
+  <div id="modal" class="modal-inner">
+    <button class="modal-close" onclick="closeModal()">✕</button>
+    <div id="modal-content"></div>
+  </div>
+</div>
+
+<!-- Import Modal -->
+<div id="import-modal">
+  <div class="import-box">
+    <h2>⬆ Import Player Data</h2>
+    <p>Paste JSON data to import players into the database. Select the league for imported players.</p>
+    <div class="league-pills" id="import-league-pills"></div>
+    <div class="tabs">
+      <div class="tab active" onclick="switchImportTab('json',this)">JSON</div>
+      <div class="tab" onclick="switchImportTab('csv',this)">CSV</div>
+    </div>
+    <div id="import-tab-json">
+      <textarea class="import-ta" id="import-json-ta" placeholder='[{"name":"Player Name","position":"G","team":"Team Name","pts":15.2,"reb":4.1,"ast":5.3,"min":28.5,"gp":30,"fg_pct":45.2,"three_pct":36.1,"ft_pct":82.5,"stl":1.2,"blk":0.3,"to":2.1}]'></textarea>
+    </div>
+    <div id="import-tab-csv" style="display:none;">
+      <textarea class="import-ta" id="import-csv-ta" placeholder="name,position,team,pts,reb,ast,min,gp,fg_pct,three_pct,ft_pct,stl,blk,to&#10;Player Name,G,Team,15.2,4.1,5.3,28.5,30,45.2,36.1,82.5,1.2,0.3,2.1"></textarea>
+    </div>
+    <div class="import-actions">
+      <button class="btn btn-ghost" onclick="closeImport()">Cancel</button>
+      <button class="btn btn-primary" onclick="doImport()">Import Players</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ===== STATE =====
+let DB = { players: [], leagues: {} };
+let currentView = 'dashboard';
+let currentPage = 1;
+const PAGE_SIZE = 25;
+let sortCol = 'pts';
+let sortDir = -1;
+let selectedLeague = null;
+let importLeague = 'Euroleague';
+let importTab = 'json';
+
+const LEAGUES = [
+  { id: 'Euroleague', color: '#f5a623', url_pattern: 'euroleaguebasketball.net/en/euroleague' },
+  { id: 'Eurocup',    color: '#4f7ef5', url_pattern: 'euroleaguebasketball.net/en/eurocup' },
+  { id: 'FIBA CL',   color: '#3ecf7a', url_pattern: 'championsleague.basketball' },
+  { id: 'ABA',       color: '#9b6dff', url_pattern: 'aba-liga.com' },
+  { id: 'BBL',       color: '#1fd8c5', url_pattern: 'easycredit-bbl.de' },
+  { id: 'ACB',       color: '#f05050', url_pattern: 'acb.com' },
+];
+
+// ===== INIT =====
+async function init() {
+  loadFromStorage();
+  renderLeagueSidebar();
+  renderLeaguePills();
+  renderFetchGrid();
+  updateOverview();
+  renderDashboard();
+  renderPlayerTable();
+  populateFilters();
+  populateCompareDropdowns();
+  renderAdvanced();
+  await autoLoadData();
+}
+
+async function autoLoadData() {
+  const base = window.location.pathname.replace(/\/[^/]*$/, '');
+  const files = [
+    { url: base + '/euroleague_2025-26.json', label: 'Euroleague' },
+    { url: base + '/eurocup_2025-26.json',    label: 'Eurocup'    },
+  ];
+  const all = [];
+  for (const f of files) {
+    try {
+      const r = await fetch(f.url);
+      if (!r.ok) continue;
+      const data = await r.json();
+      if (Array.isArray(data)) all.push(...data);
+    } catch(e) {}
+  }
+  if (all.length > 0) {
+    DB.players = [];
+    addPlayers(all);
+    ['Euroleague','Eurocup'].forEach(l => {
+      const cnt = all.filter(p=>p.league===l).length;
+      if (cnt) setLeagueStatus(l, 'ok', cnt + ' players loaded', '');
+    });
+  }
+}
+
+// ===== STORAGE =====
+ function saveToStorage() {
+  try { localStorage.setItem('hoopdb_v1', JSON.stringify(DB)); } catch(e) {}
+}
+function loadFromStorage() {
+  try {
+    const saved = localStorage.getItem('hoopdb_v1');
+    if (saved) {
+      const parsed = JSON.parse(saved);
+      if (parsed && parsed.players && parsed.players.length > 0) {
+        DB = parsed;
+      }
+    }
+  } catch(e) {}
+}
+
+
+// ===== NAVIGATION =====
+function switchView(id, el) {
+  document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  document.getElementById('view-'+id).classList.add('active');
+  if (el) el.classList.add('active');
+  else document.querySelector(`[data-view="${id}"]`)?.classList.add('active');
+  currentView = id;
+  const titles = { dashboard:'Dashboard', players:'Players', compare:'Compare Players', advanced:'Advanced Metrics', scraper:'Import Data' };
+  document.getElementById('view-title').textContent = titles[id] || id;
+  if (id === 'players') renderPlayerTable();
+  if (id === 'advanced') renderAdvanced();
+}
+
+// ===== LEAGUE SIDEBAR =====
+function renderLeagueSidebar() {
+  const wrap = document.getElementById('league-sidebar');
+  const leagueCounts = {};
+  DB.players.forEach(p => { leagueCounts[p.league] = (leagueCounts[p.league]||0)+1; });
+  wrap.innerHTML = LEAGUES.map(l => {
+    const cnt = leagueCounts[l.id] || 0;
+    return `<div class="league-chip ${selectedLeague===l.id?'active':''}" onclick="filterByLeague('${l.id}')">
+      <div class="league-dot" style="background:${l.color}"><\/div>
+      ${l.id}
+      <span class="league-count">${cnt}<\/span>
+    <\/div>`;
+  }).join('');
+}
+
+function filterByLeague(id) {
+  selectedLeague = selectedLeague === id ? null : id;
+  renderLeagueSidebar();
+  document.getElementById('filter-league').value = selectedLeague || '';
+  filterPlayers();
+  switchView('players', null);
+}
+
+// ===== IMPORT LEAGUE PILLS =====
+function renderLeaguePills() {
+  const wrap = document.getElementById('import-league-pills');
+  wrap.innerHTML = LEAGUES.map(l =>
+    `<div class="league-pill ${importLeague===l.id?'selected':''}" style="${importLeague===l.id?`background:${l.color};border-color:${l.color};`:''}" onclick="selectImportLeague('${l.id}', '${l.color}', this)">${l.id}<\/div>`
+  ).join('');
+}
+
+function selectImportLeague(id, color, el) {
+  importLeague = id;
+  document.querySelectorAll('.league-pill').forEach(p => {
+    p.classList.remove('selected');
+    p.style.background = '';
+    p.style.borderColor = '';
+    p.style.color = '';
+  });
+  el.classList.add('selected');
+  el.style.background = color;
+  el.style.borderColor = color;
+  el.style.color = '#fff';
+}
+
+// ===== FETCH GRID =====
+function renderFetchGrid() {
+  const grid = document.getElementById('fetch-grid');
+  grid.innerHTML = LEAGUES.map(l =>
+    `<div class="league-fetch-card" id="lfc-${l.id.replace(/\s/g,'_')}">
+      <div class="lfc-name" style="color:${l.color}">${l.id}<\/div>
+      <div class="lfc-status"><div class="status-dot s-idle" id="dot-${l.id.replace(/\s/g,'_')}"><\/div><span id="status-${l.id.replace(/\s/g,'_')}">Idle<\/span><\/div>
+      <div class="lfc-count" id="cnt-${l.id.replace(/\s/g,'_')}"><\/div>
+    <\/div>`
+  ).join('');
+}
+
+function setLeagueStatus(id, status, msg, count='') {
+  const key = id.replace(/\s/g,'_');
+  const dot = document.getElementById('dot-'+key);
+  const txt = document.getElementById('status-'+key);
+  const cnt = document.getElementById('cnt-'+key);
+  if (dot) { dot.className = 'status-dot s-'+status; }
+  if (txt) txt.textContent = msg;
+  if (cnt) cnt.textContent = count;
+}
+
+// ===== OVERVIEW =====
+function updateOverview() {
+  const players = DB.players;
+  const leagues = new Set(players.map(p=>p.league)).size;
+  const teams = new Set(players.map(p=>p.team)).size;
+  const avgPPG = players.length ? (players.reduce((s,p)=>s+(p.pts||0),0)/players.length).toFixed(1) : '—';
+  document.getElementById('ov-players').textContent = players.length;
+  document.getElementById('ov-leagues').textContent = leagues;
+  document.getElementById('ov-teams').textContent = teams;
+  document.getElementById('ov-ppg').textContent = avgPPG;
+  document.getElementById('player-count-badge').textContent = players.length;
+}
+
+// ===== DASHBOARD TABLE =====
+function renderDashboard() {
+  const sorted = [...DB.players].sort((a,b)=>(b.pts||0)-(a.pts||0)).slice(0,10);
+  const wrap = document.getElementById('dashboard-table-body');
+  if (!sorted.length) {
+    wrap.innerHTML = `<div class="empty-state"><div class="icon">🏀<\/div><h3>No data yet<\/h3><p>Click "Fetch Data" to load player statistics from all leagues, or use Import to add data manually.<\/p><button class="btn btn-primary" onclick="showScraper()">Get Started<\/button><\/div>`;
+    return;
+  }
+  wrap.innerHTML = renderTable(sorted, false);
+}
+
+// ===== PLAYER TABLE =====
+let filteredPlayers = [];
+
+function filterPlayers() {
+  const q = document.getElementById('global-search').value.toLowerCase();
+  const league = document.getElementById('filter-league').value;
+  const team = document.getElementById('filter-team').value;
+  const pos = document.getElementById('filter-pos').value;
+  sortCol = document.getElementById('sort-by').value;
+
+  filteredPlayers = DB.players.filter(p => {
+    if (q && !`${p.name} ${p.team} ${p.league}`.toLowerCase().includes(q)) return false;
+    if (league && p.league !== league) return false;
+    if (team && p.team !== team) return false;
+    if (pos) {
+      const pp = (p.position||'').toLowerCase();
+      if (pos === 'G' && !['g','pg','sg','guard','point guard','shooting guard'].some(x=>pp.includes(x))) return false;
+      if (pos === 'F' && !['f','sf','pf','gf','forward','small forward','power forward'].some(x=>pp.includes(x))) return false;
+      if (pos === 'C' && !['c','center','centre'].some(x=>pp===x||pp.startsWith(x))) return false;
+    }
+    return true;
+  });
+
+  filteredPlayers.sort((a,b) => sortDir * ((b[sortCol]||0)-(a[sortCol]||0)));
+  document.getElementById('filter-count').textContent = `${filteredPlayers.length} players`;
+  currentPage = 1;
+  renderPlayerTable();
+}
+
+function renderPlayerTable() {
+  if (!filteredPlayers.length) filteredPlayers = [...DB.players].sort((a,b) => sortDir * ((b[sortCol]||0)-(a[sortCol]||0)));
+  const start = (currentPage-1)*PAGE_SIZE;
+  const page = filteredPlayers.slice(start, start+PAGE_SIZE);
+  const wrap = document.getElementById('players-table-body');
+
+  if (!page.length) {
+    wrap.innerHTML = `<div class="empty-state"><div class="icon">🔍<\/div><h3>No players found<\/h3><p>Try adjusting your filters or import data first.<\/p><\/div>`;
+    document.getElementById('pagination').innerHTML = '';
+    return;
+  }
+  wrap.innerHTML = renderTable(page, true);
+  renderPagination();
+}
+
+function renderTable(players, showRank) {
+  return `<table>
+    <thead><tr>
+      ${showRank?'<th>#<\/th>':''}
+      <th>Player<\/th>
+      <th onclick="setSort('league')" class="${sortCol==='league'?'sorted':''}">League${sortCol==='league'?'<span class="sort-arrow">↓<\/span>':''}<\/th>
+      <th onclick="setSort('pts')" class="${sortCol==='pts'?'sorted':''}">PTS${sortCol==='pts'?'<span class="sort-arrow">↓<\/span>':''}<\/th>
+      <th onclick="setSort('reb')" class="${sortCol==='reb'?'sorted':''}">REB${sortCol==='reb'?'<span class="sort-arrow">↓<\/span>':''}<\/th>
+      <th onclick="setSort('ast')" class="${sortCol==='ast'?'sorted':''}">AST${sortCol==='ast'?'<span class="sort-arrow">↓<\/span>':''}<\/th>
+      <th onclick="setSort('min')" class="${sortCol==='min'?'sorted':''}">MIN${sortCol==='min'?'<span class="sort-arrow">↓<\/span>':''}<\/th>
+      <th onclick="setSort('fg_pct')" class="${sortCol==='fg_pct'?'sorted':''}">FG%${sortCol==='fg_pct'?'<span class="sort-arrow">↓<\/span>':''}<\/th>
+      <th onclick="setSort('three_pct')" class="${sortCol==='three_pct'?'sorted':''}">3P%${sortCol==='three_pct'?'<span class="sort-arrow">↓<\/span>':''}<\/th>
+      <th onclick="setSort('stl')" class="${sortCol==='stl'?'sorted':''}">STL${sortCol==='stl'?'<span class="sort-arrow">↓<\/span>':''}<\/th>
+      <th onclick="setSort('blk')" class="${sortCol==='blk'?'sorted':''}">BLK${sortCol==='blk'?'<span class="sort-arrow">↓<\/span>':''}<\/th>
+      <th>GP<\/th>
+    <\/tr><\/thead>
+    <tbody>
+    ${players.map((p, i) => {
+      const idx = showRank ? (currentPage-1)*PAGE_SIZE + i + 1 : i+1;
+      const initials = p.name.split(' ').map(w=>w[0]).join('').substring(0,2).toUpperCase();
+      const leagueInfo = LEAGUES.find(l=>l.id===p.league);
+      const lcolor = leagueInfo?.color || '#888';
+      const posClass = p.position?.includes('G')?'G':p.position?.includes('F')?p.position==='PF'?'PF':'F':p.position==='C'?'C':'G';
+      return `<tr onclick="openPlayer('${p.playerCode}')"style="cursor:pointer;">
+        ${showRank?`<td style="color:var(--text3);font-size:12px;">${idx}<\/td>`:''}
+        <td>
+          <div class="player-cell">
+            <div class="player-avatar">
+              ${p.img ? `<img src="${p.img}" alt="${p.name}" onerror="this.style.display='none';this.parentElement.textContent='${initials}'">` : initials}
+            <\/div>
+            <div>
+              <div class="player-info-name">${p.name}<\/div>
+              <div class="player-info-sub">${p.team || ''}<\/div>
+            <\/div>
+          <\/div>
+        <\/td>
+        <td><span class="league-tag" style="background:${lcolor}22;color:${lcolor};border:1px solid ${lcolor}44;">${p.league}<\/span><\/td>
+        <td class="${(p.pts||0)>=20?'val-great':(p.pts||0)>=15?'val-good':'val-avg'}">${fmt(p.pts)}<\/td>
+        <td class="${(p.reb||0)>=8?'val-great':(p.reb||0)>=5?'val-good':'val-avg'}">${fmt(p.reb)}<\/td>
+        <td class="${(p.ast||0)>=6?'val-great':(p.ast||0)>=4?'val-good':'val-avg'}">${fmt(p.ast)}<\/td>
+        <td class="val-avg">${fmt(p.min)}<\/td>
+        <td class="${(p.fg_pct||0)>=50?'val-great':(p.fg_pct||0)>=45?'val-good':'val-avg'}">${fmtPct(p.fg_pct)}<\/td>
+        <td class="${(p.three_pct||0)>=38?'val-great':(p.three_pct||0)>=35?'val-good':'val-avg'}">${fmtPct(p.three_pct)}<\/td>
+        <td>${fmt(p.stl)}<\/td>
+        <td>${fmt(p.blk)}<\/td>
+        <td class="val-muted">${p.gp||'—'}<\/td>
+      <\/tr>`;
+    }).join('')}
+    <\/tbody>
+  <\/table>`;
+}
+
+function setSort(col) {
+  if (sortCol === col) sortDir *= -1;
+  else { sortCol = col; sortDir = -1; }
+  document.getElementById('sort-by').value = col;
+  filterPlayers();
+}
+
+// ===== PAGINATION =====
+function renderPagination() {
+  const total = Math.ceil(filteredPlayers.length / PAGE_SIZE);
+  if (total <= 1) { document.getElementById('pagination').innerHTML = ''; return; }
+  let html = '';
+  if (currentPage > 1) html += `<button class="page-btn" onclick="goPage(${currentPage-1})">←<\/button>`;
+  for (let i = Math.max(1,currentPage-2); i <= Math.min(total,currentPage+2); i++) {
+    html += `<button class="page-btn ${i===currentPage?'active':''}" onclick="goPage(${i})">${i}<\/button>`;
+  }
+  if (currentPage < total) html += `<button class="page-btn" onclick="goPage(${currentPage+1})">→<\/button>`;
+  html += `<span class="page-info">${filteredPlayers.length} players<\/span>`;
+  document.getElementById('pagination').innerHTML = html;
+}
+
+function goPage(n) { currentPage = n; renderPlayerTable(); }
+
+// ===== FILTERS POPULATE =====
+function populateFilters() {
+  const leagues = [...new Set(DB.players.map(p=>p.league))].sort();
+  const teams = [...new Set(DB.players.map(p=>p.team))].sort();
+  const leagueEl = document.getElementById('filter-league');
+  const teamEl = document.getElementById('filter-team');
+  leagueEl.innerHTML = '<option value="">All Leagues<\/option>' + leagues.map(l=>`<option value="${l}">${l}<\/option>`).join('');
+  teamEl.innerHTML = '<option value="">All Teams<\/option>' + teams.map(t=>`<option value="${t}">${t}<\/option>`).join('');
+}
+
+// ===== PLAYER MODAL =====
+function openPlayer(playerCode) {
+  const p = DB.players.find(x => x.playerCode === playerCode) || {};
+  const initials = (p.name||'?').split(' ').map(w=>w[0]).join('').substring(0,2).toUpperCase();
+  const leagueInfo = LEAGUES.find(l=>l.id===p.league);
+  const lcolor = leagueInfo?.color || '#888';
+  const maxPts = Math.max(...DB.players.map(x=>x.pts||0),1);
+  const maxReb = Math.max(...DB.players.map(x=>x.reb||0),1);
+  const maxAst = Math.max(...DB.players.map(x=>x.ast||0),1);
+  if(!window._LS||window._LSn!==DB.players.length){window._LS=computeLeagueStats(DB.players);window._LSn=DB.players.length;}
+  var gavg=function(f){return window._LS&&window._LS[f]?window._LS[f].avg:null;};
+  var gpct=function(f){return window._LS&&window._LS[f]?window._LS[f].rankOf(p[f]||0):null;};
+
+  const hero = `<div class="modal-hero">
+      <div class="modal-avatar">${p.img ? `<img src="${p.img}" alt="${p.name}" onerror="this.style.display='none';this.parentElement.textContent='${initials}'">` : initials}<\/div>
+      <div style="flex:1">
+        <div class="modal-player-name">${p.name||'—'}<\/div>
+        <div class="modal-player-meta">${p.team||'—'} · ${p.nationality||''}${p.birthDate?' · b. '+p.birthDate.slice(0,4):''}<\/div>
+        <div class="modal-tags" style="margin-top:8px">
+          <span class="tag tag-pos">${p.position||'?'}<\/span>
+          <span class="tag tag-team">🏟 ${p.team||'—'}<\/span>
+          <span class="tag tag-league" style="background:${lcolor}22;color:${lcolor};border:1px solid ${lcolor}44">${p.league||''}<\/span>
+          ${p.height?`<span class="tag tag-team">📏 ${p.height}<\/span>`:''}
+          ${p.dorsal?`<span class="tag tag-team">#${p.dorsal}<\/span>`:''}
+        <\/div>
+      <\/div><\/div>`;
+
+  const keyBar = `<div class="modal-stats-grid">
+    <div class="modal-stat-cell"><div class="modal-stat-val v-green">${fmt(p.pts)}<\/div><div class="modal-stat-lbl">PPG<\/div><\/div>
+    <div class="modal-stat-cell"><div class="modal-stat-val v-accent">${fmt(p.reb)}<\/div><div class="modal-stat-lbl">RPG<\/div><\/div>
+    <div class="modal-stat-cell"><div class="modal-stat-val v-amber">${fmt(p.ast)}<\/div><div class="modal-stat-lbl">APG<\/div><\/div>
+    <div class="modal-stat-cell"><div class="modal-stat-val v-purple">${fmt(p.stl)}<\/div><div class="modal-stat-lbl">SPG<\/div><\/div>
+    <div class="modal-stat-cell"><div class="modal-stat-val">${fmt(p.blk)}<\/div><div class="modal-stat-lbl">BPG<\/div><\/div>
+  <\/div>`;
+
+  const sCell = (lbl,made,att,pct,clr) => {
+    const v = pct!==undefined&&pct!==null ? pct : (att>0?Math.round(made/att*1000)/10:0);
+    const vn = parseFloat(v)||0;
+    return `<div class="shoot-cell"><div class="shoot-cell-label">${lbl}<\/div>
+      <div class="shoot-cell-val" style="color:${clr}">${isNaN(vn)?'—':vn.toFixed(1)}%<\/div>
+      <div class="shoot-cell-sub">${made!=null?made:'—'}/${att!=null?att:'—'}<\/div>
+      <div class="shoot-bar-wrap"><div class="shoot-bar" style="width:${Math.min(vn,100)}%;background:${clr}"><\/div><\/div><\/div>`;
+  };
+
+  const efg = p.fga>0?Math.round(((p.fgm||0)+.5*(p.fg3m||0))/(p.fga)*1000)/10:0;
+  const ts  = (p.fga||0)+.44*(p.fta||0)>0?Math.round((p.pts_total||0)/(2*((p.fga||0)+.44*(p.fta||0)))*1000)/10:0;
+
+  const overview = `<div class="modal-tab-content active" id="tab-overview-${playerCode}">
+    <div class="modal-section"><h4>Shooting Splits<\/h4>
+      <div class="shoot-grid">
+        ${sCell('FG%',p.fgm,p.fga,p.fg_pct,'var(--green)')}
+        ${sCell('2P%',p.fg2m,p.fg2a,p.fg2_pct,'var(--accent)')}
+        ${sCell('3P%',p.fg3m,p.fg3a,p.three_pct||p.fg3_pct,'var(--amber)')}
+        ${sCell('FT%',p.ftm,p.fta,p.ft_pct,'var(--purple)')}
+        ${sCell('eFG%',null,null,efg,'var(--teal)')}
+        ${sCell('TS%',null,null,ts,'var(--text2)')}
+      <\/div>
+    <\/div>
+    <div class="modal-section"><h4>Season Totals<\/h4>
+      <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px">
+        ${infoCell('GP',p.gp||'—')} ${infoCell('GS',p.gs||'—')}
+        ${infoCell('Min Total',p.min_total||'—')} ${infoCell('Points',p.pts_total||'—')}
+        ${infoCell('Rebounds',p.reb_total||'—')} ${infoCell('Assists',p.ast_total||'—')}
+        ${infoCell('Steals',p.stl_total||'—')} ${infoCell('Blocks',p.blk_total||'—')}
+        ${infoCell('Turnovers',p.to_total||'—')} ${infoCell('PIR',p.pir_total||'—')}
+        ${infoCell('FC',p.fc_total||'—')} ${infoCell('FD',p.fd_total||'—')}
+      <\/div>
+    <\/div>
+    <div class="modal-section"><h4>Per Game Averages<\/h4>
+      ${miniBar('Points',  p.pts, maxPts, 'var(--green)',  gavg('pts'), gpct('pts'))}
+      ${miniBar('Rebounds',p.reb, maxReb, 'var(--accent)', gavg('reb'), gpct('reb'))}
+      ${miniBar('Assists', p.ast, maxAst, 'var(--amber)',  gavg('ast'), gpct('ast'))}
+      ${miniBar('Steals',  p.stl, 3,      'var(--purple)', gavg('stl'), gpct('stl'))}
+      ${miniBar('Blocks',  p.blk, 3,      'var(--teal)',   gavg('blk'), gpct('blk'))}
+      ${miniBar('PIR',     p.pir, 30,     'var(--text2)',  gavg('pir'), gpct('pir'))}}
+    <\/div>
+    <div class="modal-section"><h4>Advanced<\/h4>
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px">
+        ${infoCell('EFF',calcEFF(p))} ${infoCell('TS%',ts+'%')}
+        ${infoCell('AST/TO',p.to?((p.ast||0)/(p.to||1)).toFixed(1):'—')}
+        ${infoCell('OREB/G',fmt(p.oreb))} ${infoCell('DREB/G',fmt(p.dreb))}
+        ${infoCell('FC/G',fmt(p.fc))}
+      <\/div>
+    <\/div>
+  <\/div>`;
+
+  const games = p.gamelog || [];
+  const glRows = games.map(g => {
+    const fg2s = g.fg2m!=null?`${g.fg2m}/${g.fg2a}`:'—';
+    const fg3s = g.fg3m!=null?`${g.fg3m}/${g.fg3a}`:'—';
+    const fts  = g.ftm !=null?`${g.ftm}/${g.fta}`:'—';
+    const pc   = (g.pts||0)>=20?'gl-pts-high':(g.pts||0)>=10?'gl-pts-ok':'gl-pts-low';
+    const pm   = g.plusMinus; const pmc = pm>0?'gl-plus':pm<0?'gl-minus':'gl-zero';
+    const pms  = pm!=null?(pm>0?'+':'')+pm:'—';
+    const link = g.gameUrl?`https://www.euroleaguebasketball.net${g.gameUrl}`:'#';
+    return `<tr>
+      <td><div class="gl-opp"><span class="gl-loc">${g.location==='home'?'vs':'@'}<\/span>
+        ${g.oppLogo?`<img src="${g.oppLogo}" alt="${g.opponent}" onerror="this.style.display='none'">`:''}
+        <a href="${link}" target="_blank" style="color:var(--text);text-decoration:none;font-weight:500">${g.opponent||'—'}<\/a>
+      <\/div><\/td>
+      <td>${g.min||'—'}<\/td><td class="${pc}">${g.pts??'—'}<\/td>
+      <td>${fg2s}<\/td><td>${fg3s}<\/td><td>${fts}<\/td>
+      <td>${g.reb??'—'}<\/td><td>${g.ast??'—'}<\/td><td>${g.stl??'—'}<\/td>
+      <td>${g.blk??'—'}<\/td><td>${g.to??'—'}<\/td>
+      <td>${g.pir??'—'}<\/td><td class="${pmc}">${pms}<\/td>
+    <\/tr>`;
+  }).join('');
+
+  const gamelog = `<div class="modal-tab-content" id="tab-gamelog-${playerCode}">
+    ${games.length===0
+      ? '<div style="text-align:center;padding:40px;color:var(--text3)">No game log data available<\/div>'
+      : `<div class="gamelog-wrap"><table class="gamelog-table">
+          <thead><tr>
+            <th style="text-align:left;min-width:100px">Opponent<\/th>
+            <th>MIN<\/th><th>PTS<\/th><th>2FG<\/th><th>3FG<\/th><th>FT<\/th>
+            <th>REB<\/th><th>AST<\/th><th>STL<\/th><th>BLK<\/th><th>TO<\/th><th>PIR<\/th><th>+/-<\/th>
+          <\/tr><\/thead>
+          <tbody>${glRows}<\/tbody>
+        <\/table><\/div>`}
+  <\/div>`;
+
+  document.getElementById('modal-content').innerHTML =
+    hero + keyBar +
+    `<div class="modal-tabs">
+      <div class="modal-tab active" onclick="switchModalTab('overview','${playerCode}',this)">Overview<\/div>
+      <div class="modal-tab" onclick="switchModalTab('gamelog','${playerCode}',this)">Game Log${games.length?' ('+games.length+')':''}<\/div>
+    <\/div>` + overview + gamelog;
+
+  document.getElementById('modal-overlay').classList.add('open');
+}
+
+function switchModalTab(tab, code, el) {
+  document.querySelectorAll('.modal-tab').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.modal-tab-content').forEach(t => t.classList.remove('active'));
+  el.classList.add('active');
+  document.getElementById(`tab-${tab}-${code}`)?.classList.add('active');
+}
+
+function miniBar(label, val, max, color, avgVal, pctRank) {
+  var bp = Math.min(100, ((val||0)/max)*100);
+  var ap = avgVal != null ? Math.min(100, ((avgVal||0)/max)*100) : null;
+  var badge = pctRank != null ? '<span class="pct-badge" style="background:' + (pctRank>=75?'var(--green)':pctRank>=50?'var(--amber)':pctRank>=25?'#888':'#e74c3c') + '">' + Math.round(pctRank) + 'th<\/span>' : '';
+  var avgLine = ap != null ? '<div class="avg-marker" style="left:' + ap.toFixed(1) + '%" title="League avg: ' + (avgVal||0).toFixed(1) + '"><\/div>' : '';
+  return '<div class="mini-stat-row"><div class="mini-stat-lbl">' + label + badge + '<\/div><div class="mini-stat-bar-wrap"><div class="mini-stat-bar" style="width:' + bp.toFixed(1) + '%;background:' + color + '"><\/div>' + avgLine + '<\/div><div class="mini-stat-val">' + fmt(val) + '<\/div><\/div>';
+}
+
+function computeLeagueStats(players) {
+  var F=['pts','reb','ast','stl','blk','pir','fg_pct','fg2_pct','three_pct','ft_pct','oreb','dreb','to'];
+  var out={};
+  F.forEach(function(f){
+    var vals=players.map(function(p){return +(p[f])||0;}).filter(function(v){return v>0;}).sort(function(a,b){return a-b;});
+    if(!vals.length){out[f]={avg:0,rankOf:function(){return 50;}};return;}
+    out[f]={avg:Math.round(vals.reduce(function(s,v){return s+v;},0)/vals.length*10)/10,rankOf:function(v){if(!(v>0))return 0;var lo=0,hi=vals.length;while(lo<hi){var m=(lo+hi)>>1;if(vals[m]<v)lo=m+1;else hi=m;}return Math.round(lo/vals.length*100);}};
+  });
+  return out;
+}
+window._LS=null;window._LSn=0;
+
+function infoCell(label, val) {
+  return `<div style="background:var(--surface2);border-radius:6px;padding:8px 10px;">
+    <div style="font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:.5px">${label}<\/div>
+    <div style="font-size:15px;font-weight:600;margin-top:2px">${val}<\/div><\/div>`;
+}
+
+function closeModal() { document.getElementById('modal-overlay').classList.remove('open'); }
+
+// ===== COMPARE =====
+function populateCompareDropdowns() {
+  const opts = DB.players.map((p,i) => `<option value="${i}">${p.name} (${p.team})<\/option>`).join('');
+  ['compare-p1','compare-p2'].forEach(id => {
+    const el = document.getElementById(id);
+    el.innerHTML = '<option value="">Select player...<\/option>' + opts;
+  });
+}
+
+function updateCompare() {
+  const i1 = document.getElementById('compare-p1').value;
+  const i2 = document.getElementById('compare-p2').value;
+  const out = document.getElementById('compare-output');
+  if (!i1 || !i2) { out.innerHTML = ''; return; }
+  const p1 = DB.players[i1];
+  const p2 = DB.players[i2];
+  const stats = [
+    { key:'pts', label:'Points', max:35 },
+    { key:'reb', label:'Rebounds', max:15 },
+    { key:'ast', label:'Assists', max:12 },
+    { key:'stl', label:'Steals', max:3 },
+    { key:'blk', label:'Blocks', max:4 },
+    { key:'min', label:'Minutes', max:40 },
+    { key:'fg_pct', label:'FG%', max:65 },
+    { key:'three_pct', label:'3P%', max:50 },
+    { key:'ft_pct', label:'FT%', max:100 },
+  ];
+  const l1 = LEAGUES.find(l=>l.id===p1.league);
+  const l2 = LEAGUES.find(l=>l.id===p2.league);
+  const c1 = l1?.color || '#4f7ef5';
+  const c2 = l2?.color || '#f05050';
+
+  function cmpCard(p, color) {
+    const init = p.name.split(' ').map(w=>w[0]).join('').substring(0,2).toUpperCase();
+    return `<div class="compare-card">
+      <div class="compare-card-header">
+        <div class="player-avatar" style="width:44px;height:44px;background:${color}22;color:${color};font-size:15px;">
+          ${p.img ? `<img src="${p.img}" alt="${p.name}" style="width:100%;height:100%;object-fit:cover;" onerror="this.style.display='none';this.parentElement.textContent='${init}'">` : init}
+        <\/div>
+        <div>
+          <div style="font-weight:600;font-size:14px;">${p.name}<\/div>
+          <div style="font-size:12px;color:var(--text3);">${p.team} · <span style="color:${color}">${p.league}<\/span><\/div>
+        <\/div>
+      <\/div>
+      ${stats.map(s => {
+        const v1 = p1[s.key]||0, v2 = p2[s.key]||0;
+        const val = p === p1 ? v1 : v2;
+        const pct = Math.min(100, (val/s.max)*100);
+        const winner = (p === p1 && v1 >= v2) || (p === p2 && v2 >= v1);
+        return `<div class="compare-stat-row">
+          <div class="csr-label" style="font-size:11px;color:var(--text3)">${s.label}<\/div>
+          <div class="csr-bar-wrap"><div class="csr-bar" style="width:${pct}%;background:${winner?color:'var(--surface3)'};left:0;"><\/div><\/div>
+          <div class="csr-val" style="color:${winner?color:'var(--text3)'};">${val}<\/div>
+        <\/div>`;
+      }).join('')}
+    <\/div>`;
+  }
+
+  out.innerHTML = `<div class="compare-layout">${cmpCard(p1,c1)}${cmpCard(p2,c2)}<\/div>`;
+}
+
+// ===== ADVANCED METRICS =====
+function calcEFF(p) {
+  if (!p.pts) return '—';
+  const eff = (p.pts||0)+(p.reb||0)+(p.ast||0)+(p.stl||0)+(p.blk||0)-(p.to||0)-((p.fga||0)-(p.fgm||0))-((p.fta||0)-(p.ftm||0));
+  return isNaN(eff) ? '—' : eff.toFixed(1);
+}
+
+function calcTS(p) {
+  if (!p.pts) return '—';
+  const fga = p.fga || (p.pts / (p.fg_pct/100||0.5) / 2);
+  const fta = p.fta || (p.ft_pct ? (p.pts * 0.2) : 0);
+  const ts = p.pts / (2 * (fga + 0.44 * fta));
+  return isNaN(ts) ? '—' : (ts*100).toFixed(1)+'%';
+}
+
+function renderAdvanced() {
+  if (!DB.players.length) {
+    document.getElementById('advanced-grid').innerHTML = `<div class="empty-state"><div class="icon">🧮<\/div><h3>No data yet<\/h3><p>Import player data first to see advanced metrics.<\/p><\/div>`;
+    return;
+  }
+  const players = DB.players;
+  const topScorer = [...players].sort((a,b)=>(b.pts||0)-(a.pts||0))[0];
+  const topAssist = [...players].sort((a,b)=>(b.ast||0)-(a.ast||0))[0];
+  const topReb = [...players].sort((a,b)=>(b.reb||0)-(a.reb||0))[0];
+  const mostEff = [...players].filter(p=>p.pts).sort((a,b)=>parseFloat(calcEFF(b)||0)-parseFloat(calcEFF(a)||0))[0];
+  const bestFG = [...players].filter(p=>p.fg_pct&&(p.gp||0)>=10).sort((a,b)=>(b.fg_pct||0)-(a.fg_pct||0))[0];
+  const best3 = [...players].filter(p=>p.three_pct&&(p.gp||0)>=10).sort((a,b)=>(b.three_pct||0)-(a.three_pct||0))[0];
+
+  function topCard(title, desc, players_list, valFn, label) {
+    return `<div class="metric-card">
+      <h4>${title}<\/h4>
+      <div class="desc">${desc}<\/div>
+      ${players_list.slice(0,5).map((p,i) => {
+        const val = valFn(p);
+        const colors = ['var(--amber)','var(--text)','var(--text)','var(--text2)','var(--text3)'];
+        return `<div style="display:flex;align-items:center;gap:8px;padding:5px 0;border-bottom:1px solid var(--border);">
+          <span style="font-size:11px;color:var(--text3);width:16px;">${i+1}<\/span>
+          <div style="flex:1;font-size:13px;">${p.name} <span style="font-size:11px;color:var(--text3)">${p.team}<\/span><\/div>
+          <span style="font-weight:600;color:${colors[i]};font-size:14px;">${val}${label}<\/span>
+        <\/div>`;
+      }).join('')}
+    <\/div>`;
+  }
+
+  document.getElementById('advanced-grid').innerHTML =
+    topCard('🔥 Top Scorers', 'Points per game', [...players].sort((a,b)=>(b.pts||0)-(a.pts||0)), p=>fmt(p.pts), '') +
+    topCard('🎯 Best Playmakers', 'Assists per game', [...players].sort((a,b)=>(b.ast||0)-(a.ast||0)), p=>fmt(p.ast), '') +
+    topCard('💪 Top Rebounders', 'Rebounds per game', [...players].sort((a,b)=>(b.reb||0)-(a.reb||0)), p=>fmt(p.reb), '') +
+    topCard('⚡ Efficiency Rating', 'PTS+REB+AST+STL+BLK−TO−Misses', [...players].filter(p=>p.pts).sort((a,b)=>parseFloat(calcEFF(b)||0)-parseFloat(calcEFF(a)||0)), p=>calcEFF(p), '') +
+    topCard('🎳 FG% Leaders', 'Field goal percentage (min 10 GP)', [...players].filter(p=>p.fg_pct&&(p.gp||0)>=10).sort((a,b)=>(b.fg_pct||0)-(a.fg_pct||0)), p=>fmtPct(p.fg_pct), '') +
+    topCard('🏹 3P% Leaders', '3-point percentage (min 10 GP)', [...players].filter(p=>p.three_pct&&(p.gp||0)>=10).sort((a,b)=>(b.three_pct||0)-(a.three_pct||0)), p=>fmtPct(p.three_pct), '');
+}
+
+// ===== SCRAPER =====
+function showScraper() { switchView('scraper', null); }
+
+async function fetchAllLeagues() {
+  for (const l of LEAGUES) {
+    setLeagueStatus(l.id, 'loading', 'Fetching...');
+    await new Promise(r => setTimeout(r, 500 + Math.random()*500));
+    // Direct cross-origin fetch will be blocked by CORS in browser
+    setLeagueStatus(l.id, 'err', 'CORS blocked', 'Use import instead');
+  }
+  showStatus('Direct fetching is blocked by CORS. Please use "Load Sample Data" or import via JSON/CSV.', 'error');
+}
+
+async function fetchByUrl() {
+  const url = document.getElementById('url-input').value.trim();
+  const league = document.getElementById('url-league-select').value;
+  if (!url) return;
+  showStatus('Attempting to fetch...', '');
+  try {
+    const resp = await fetch(`https://api.allorigins.win/get?url=${encodeURIComponent(url)}`);
+    const data = await resp.json();
+    const html = data.contents;
+    const parsed = parseLeagueHTML(html, league, url);
+    if (parsed.length) {
+      addPlayers(parsed, league);
+      showStatus(`✅ Imported ${parsed.length} players from ${league}`, 'success');
+    } else {
+      showStatus('Could not parse player data from this URL. The site may use JavaScript rendering. Try the Import button to paste JSON data manually.', 'error');
+    }
+  } catch(e) {
+    showStatus('Fetch failed. This site likely blocks CORS proxies. Use Import to paste data manually.', 'error');
+  }
+}
+
+function parseLeagueHTML(html, league, url) {
+  // Try to extract structured data from HTML
+  const players = [];
+  // ABA Liga pattern
+  if (url.includes('aba-liga.com')) {
+    const matches = html.matchAll(/<td[^>]*>([A-Z][a-z]+ [A-Z][a-z]+)<\/td>/g);
+    for (const m of matches) players.push({ name: m[1], league, team: '', pts: 0, reb: 0, ast: 0 });
+  }
+  return players;
+}
+
+function showStatus(msg, type) {
+  const el = document.getElementById('scrape-status');
+  el.textContent = msg;
+  el.className = 'scrape-status show' + (type ? ' '+type : '');
+}
+
+// ===== SAMPLE DATA =====
+function loadSampleData() {
+  const samplePlayers = [
+    // Euroleague
+    { name: 'Nikola Mirotic', position: 'PF', team: 'FC Barcelona', league: 'Euroleague', nationality: 'Spanish', height: '208cm', age: 33, gp: 30, pts: 17.2, reb: 7.1, ast: 2.3, min: 28.5, fg_pct: 48.1, three_pct: 38.2, ft_pct: 84.1, stl: 0.9, blk: 0.7, to: 1.8 },
+    { name: 'Sasha Vezenkov', position: 'PF', team: 'Olympiacos', league: 'Euroleague', nationality: 'Bulgarian', height: '206cm', age: 28, gp: 32, pts: 15.8, reb: 5.4, ast: 1.8, min: 26.2, fg_pct: 50.3, three_pct: 40.1, ft_pct: 79.5, stl: 0.8, blk: 0.4, to: 1.2 },
+    { name: 'Shane Larkin', position: 'G', team: 'Anadolu Efes', league: 'Euroleague', nationality: 'American', height: '180cm', age: 32, gp: 28, pts: 14.9, reb: 3.2, ast: 6.8, min: 29.1, fg_pct: 43.5, three_pct: 35.8, ft_pct: 88.2, stl: 1.4, blk: 0.1, to: 2.5 },
+    { name: 'Vasilije Micic', position: 'G', team: 'Anadolu Efes', league: 'Euroleague', nationality: 'Serbian', height: '190cm', age: 30, gp: 30, pts: 13.5, reb: 3.8, ast: 7.2, min: 28.8, fg_pct: 46.2, three_pct: 37.5, ft_pct: 82.0, stl: 1.6, blk: 0.2, to: 2.2 },
+    { name: 'Mike James', position: 'G', team: 'AS Monaco', league: 'Euroleague', nationality: 'American', height: '185cm', age: 33, gp: 29, pts: 18.9, reb: 2.9, ast: 5.5, min: 30.2, fg_pct: 42.8, three_pct: 34.2, ft_pct: 85.6, stl: 1.2, blk: 0.1, to: 2.8 },
+    { name: 'Tornike Shengelia', position: 'F', team: 'CSKA Moscow', league: 'Euroleague', nationality: 'Georgian', height: '206cm', age: 32, gp: 25, pts: 14.1, reb: 5.8, ast: 2.1, min: 24.5, fg_pct: 55.1, three_pct: 33.0, ft_pct: 76.3, stl: 1.0, blk: 0.8, to: 1.5 },
+    { name: 'Nando De Colo', position: 'G', team: 'LDLC ASVEL', league: 'Euroleague', nationality: 'French', height: '193cm', age: 37, gp: 27, pts: 12.4, reb: 3.5, ast: 5.0, min: 27.3, fg_pct: 44.1, three_pct: 36.8, ft_pct: 83.4, stl: 1.1, blk: 0.3, to: 2.0 },
+    { name: 'Will Clyburn', position: 'SF', team: 'CSKA Moscow', league: 'Euroleague', nationality: 'American', height: '201cm', age: 32, gp: 24, pts: 15.6, reb: 4.8, ast: 2.5, min: 26.0, fg_pct: 50.2, three_pct: 38.5, ft_pct: 80.0, stl: 1.3, blk: 0.5, to: 1.6 },
+
+    // Eurocup
+    { name: 'Dylan Ennis', position: 'G', team: 'Aris Thessaloniki', league: 'Eurocup', nationality: 'Canadian', height: '188cm', age: 32, gp: 24, pts: 16.2, reb: 3.5, ast: 5.8, min: 30.5, fg_pct: 44.5, three_pct: 37.2, ft_pct: 82.1, stl: 1.5, blk: 0.2, to: 2.1 },
+    { name: 'Devin Robinson', position: 'PF', team: 'Aris Thessaloniki', league: 'Eurocup', nationality: 'American', height: '203cm', age: 28, gp: 22, pts: 13.8, reb: 8.2, ast: 1.2, min: 25.4, fg_pct: 52.8, three_pct: 32.1, ft_pct: 73.5, stl: 0.7, blk: 1.2, to: 1.4 },
+    { name: 'Marcus Eriksson', position: 'G', team: 'Bayern Munich', league: 'Eurocup', nationality: 'Swedish', height: '193cm', age: 30, gp: 26, pts: 10.8, reb: 3.2, ast: 2.8, min: 24.5, fg_pct: 48.5, three_pct: 42.1, ft_pct: 85.0, stl: 0.8, blk: 0.2, to: 1.0 },
+    { name: 'Augustine Rubit', position: 'F', team: 'Unicaja', league: 'Eurocup', nationality: 'American', height: '201cm', age: 34, gp: 20, pts: 11.5, reb: 6.8, ast: 1.5, min: 22.8, fg_pct: 54.2, three_pct: 35.0, ft_pct: 75.5, stl: 0.6, blk: 0.9, to: 1.2 },
+
+    // FIBA CL
+    { name: 'Georgios Papagiannis', position: 'C', team: 'AEK BC', league: 'FIBA CL', nationality: 'Greek', height: '220cm', age: 26, gp: 20, pts: 12.5, reb: 7.8, ast: 1.2, min: 22.5, fg_pct: 58.2, three_pct: 25.0, ft_pct: 68.5, stl: 0.5, blk: 1.8, to: 1.5 },
+    { name: 'TJ Shorts', position: 'G', team: 'Fraport Skyliners', league: 'FIBA CL', nationality: 'American', height: '175cm', age: 24, gp: 22, pts: 19.5, reb: 4.2, ast: 9.1, min: 33.2, fg_pct: 46.8, three_pct: 38.5, ft_pct: 85.2, stl: 1.8, blk: 0.1, to: 3.2 },
+    { name: 'Ike Udanoh', position: 'C', team: 'Iberostar Tenerife', league: 'FIBA CL', nationality: 'American', height: '206cm', age: 34, gp: 18, pts: 10.8, reb: 6.5, ast: 1.5, min: 20.5, fg_pct: 60.5, three_pct: 0, ft_pct: 72.0, stl: 0.4, blk: 1.5, to: 1.2 },
+
+    // ABA Liga
+    { name: 'Nemanja Nedovic', position: 'G', team: 'Crvena zvezda', league: 'ABA', nationality: 'Serbian', height: '196cm', age: 32, gp: 26, pts: 17.8, reb: 3.5, ast: 5.2, min: 29.8, fg_pct: 44.2, three_pct: 35.5, ft_pct: 81.2, stl: 1.6, blk: 0.3, to: 2.5 },
+    { name: 'Uroš Trifunović', position: 'G', team: 'Partizan', league: 'ABA', nationality: 'Serbian', height: '191cm', age: 26, gp: 28, pts: 13.2, reb: 2.8, ast: 4.5, min: 27.5, fg_pct: 43.8, three_pct: 36.2, ft_pct: 79.5, stl: 1.3, blk: 0.2, to: 1.8 },
+    { name: 'Karlo Matković', position: 'C', team: 'Cibona', league: 'ABA', nationality: 'Croatian', height: '215cm', age: 24, gp: 25, pts: 10.5, reb: 7.2, ast: 1.5, min: 22.5, fg_pct: 56.8, three_pct: 28.5, ft_pct: 65.0, stl: 0.5, blk: 1.8, to: 1.5 },
+    { name: 'Derrick Williams', position: 'PF', team: 'Borac Mozzart', league: 'ABA', nationality: 'American', height: '203cm', age: 33, gp: 24, pts: 15.8, reb: 7.5, ast: 1.8, min: 28.5, fg_pct: 52.1, three_pct: 35.0, ft_pct: 78.5, stl: 0.8, blk: 0.8, to: 1.6 },
+    { name: 'Tarik Biberović', position: 'SF', team: 'Crvena zvezda', league: 'ABA', nationality: 'Bosnian', height: '200cm', age: 22, gp: 28, pts: 11.8, reb: 4.2, ast: 2.1, min: 25.5, fg_pct: 47.5, three_pct: 37.8, ft_pct: 80.0, stl: 0.9, blk: 0.4, to: 1.2 },
+
+    // BBL
+    { name: 'Wade Baldwin IV', position: 'G', team: 'ALBA Berlin', league: 'BBL', nationality: 'American', height: '188cm', age: 28, gp: 30, pts: 18.5, reb: 4.2, ast: 6.8, min: 31.5, fg_pct: 45.5, three_pct: 36.8, ft_pct: 82.5, stl: 1.8, blk: 0.3, to: 2.8 },
+    { name: 'Oscar da Silva', position: 'PF', team: 'FC Bayern Munich', league: 'BBL', nationality: 'German', height: '203cm', age: 26, gp: 28, pts: 14.8, reb: 6.8, ast: 2.5, min: 26.5, fg_pct: 56.2, three_pct: 33.5, ft_pct: 75.5, stl: 0.8, blk: 0.8, to: 1.5 },
+    { name: 'Elias Harris', position: 'SF', team: 'MHP Riesen Ludwigsburg', league: 'BBL', nationality: 'German', height: '201cm', age: 32, gp: 26, pts: 12.5, reb: 5.8, ast: 2.8, min: 25.5, fg_pct: 50.2, three_pct: 36.5, ft_pct: 78.0, stl: 0.9, blk: 0.5, to: 1.3 },
+    { name: 'Javontae Hawkins', position: 'F', team: 'Brose Bamberg', league: 'BBL', nationality: 'American', height: '198cm', age: 27, gp: 29, pts: 17.2, reb: 5.8, ast: 2.5, min: 28.5, fg_pct: 51.5, three_pct: 38.2, ft_pct: 80.5, stl: 1.1, blk: 0.6, to: 1.8 },
+
+    // ACB
+    { name: 'Scottie Wilbekin', position: 'G', team: 'Unicaja Málaga', league: 'ACB', nationality: 'American', height: '188cm', age: 31, gp: 30, pts: 16.5, reb: 3.2, ast: 5.8, min: 29.5, fg_pct: 44.5, three_pct: 37.2, ft_pct: 83.0, stl: 1.5, blk: 0.2, to: 2.2 },
+    { name: 'Thomas Heurtel', position: 'G', team: 'Real Madrid', league: 'ACB', nationality: 'French', height: '186cm', age: 33, gp: 25, pts: 10.5, reb: 2.8, ast: 7.2, min: 22.5, fg_pct: 45.8, three_pct: 35.5, ft_pct: 80.0, stl: 1.2, blk: 0.1, to: 2.5 },
+    { name: 'Walter Tavares', position: 'C', team: 'Real Madrid', league: 'ACB', nationality: 'Cape Verdean', height: '221cm', age: 31, gp: 28, pts: 11.8, reb: 8.5, ast: 1.2, min: 23.5, fg_pct: 65.5, three_pct: 0, ft_pct: 68.5, stl: 0.6, blk: 2.8, to: 1.2 },
+    { name: 'Cory Higgins', position: 'G', team: 'FC Barcelona', league: 'ACB', nationality: 'American', height: '194cm', age: 33, gp: 27, pts: 13.2, reb: 2.8, ast: 3.5, min: 24.5, fg_pct: 47.5, three_pct: 40.2, ft_pct: 84.5, stl: 1.1, blk: 0.3, to: 1.5 },
+    { name: 'Trey Thompkins', position: 'PF', team: 'Asisa Joventut', league: 'ACB', nationality: 'American', height: '206cm', age: 34, gp: 26, pts: 14.5, reb: 5.8, ast: 1.8, min: 25.5, fg_pct: 49.5, three_pct: 38.8, ft_pct: 82.0, stl: 0.7, blk: 0.5, to: 1.2 },
+  ];
+
+  addPlayers(samplePlayers);
+  alert(`✅ Loaded ${samplePlayers.length} sample players across ${LEAGUES.length} leagues!\n\nThis is example data to demonstrate the database. Import real data using the Import button after scraping from the league websites.`);
+  LEAGUES.forEach(l => {
+    const cnt = samplePlayers.filter(p=>p.league===l.id).length;
+    if (cnt) setLeagueStatus(l.id, 'ok', `${cnt} players`, `${cnt} players loaded`);
+  });
+}
+
+function addPlayers(players, defaultLeague) {
+  players.forEach(p => {
+    if (defaultLeague && !p.league) p.league = defaultLeague;
+    const existing = DB.players.findIndex(x => x.name === p.name && x.league === p.league);
+    if (existing >= 0) DB.players[existing] = { ...DB.players[existing], ...p };
+    else DB.players.push(p);
+  });
+  saveToStorage();
+  updateOverview();
+  renderDashboard();
+  filterPlayers();
+  populateFilters();
+  populateCompareDropdowns();
+  renderLeagueSidebar();
+  if (currentView === 'advanced') renderAdvanced();
+}
+
+// ===== IMPORT MODAL =====
+function openImport() {
+  renderLeaguePills();
+  document.getElementById('import-modal').classList.add('open');
+}
+function closeImport() { document.getElementById('import-modal').classList.remove('open'); }
+
+function switchImportTab(tab, el) {
+  importTab = tab;
+  document.querySelectorAll('#import-modal .tab').forEach(t => t.classList.remove('active'));
+  el.classList.add('active');
+  document.getElementById('import-tab-json').style.display = tab==='json'?'':'none';
+  document.getElementById('import-tab-csv').style.display = tab==='csv'?'':'none';
+}
+
+function doImport() {
+  try {
+    let players;
+    if (importTab === 'json') {
+      players = JSON.parse(document.getElementById('import-json-ta').value);
+    } else {
+      const csv = document.getElementById('import-csv-ta').value.trim();
+      const lines = csv.split('\n');
+      const headers = lines[0].split(',').map(h=>h.trim());
+      players = lines.slice(1).map(line => {
+        const vals = line.split(',').map(v=>v.trim());
+        const obj = {};
+        headers.forEach((h,i) => { obj[h] = isNaN(vals[i]) ? vals[i] : parseFloat(vals[i]); });
+        return obj;
+      });
+    }
+    addPlayers(players, importLeague);
+    closeImport();
+    alert(`✅ Imported ${players.length} players!`);
+  } catch(e) {
+    alert('❌ Parse error: ' + e.message);
+  }
+}
+
+// ===== HELPERS =====
+function fmt(v) { return v != null && v !== '' ? parseFloat(v).toFixed(1) : '—'; }
+function fmtPct(v) { return v != null && v !== '' && v > 0 ? parseFloat(v).toFixed(1)+'%' : '—'; }
+
+// ===== START =====
+window.addPlayers   = addPlayers;
+window.autoLoadData = autoLoadData;
+window.filterPlayers = filterPlayers;
+window.switchView   = switchView;
+window.openPlayer   = openPlayer;
+window.setSort      = setSort;
+window.closeModal   = closeModal;
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', () => init().catch(console.error));
+} else {
+  init().catch(console.error);
+}
+</script>
+</body>
+</html>
