@@ -477,7 +477,7 @@ let currentView = 'dashboard';
 let currentPage = 1;
 const PAGE_SIZE = 25;
 let sortCol = 'pts';
-let sortDir = -1;
+let sortDir = 1;
 let selectedLeague = null;
 let importLeague = 'Euroleague';
 let importTab = 'json';
@@ -751,7 +751,7 @@ function renderTable(players, showRank) {
 
 function setSort(col) {
   if (sortCol === col) sortDir *= -1;
-  else { sortCol = col; sortDir = -1; }
+  else { sortCol = col; sortDir = 1; }
   document.getElementById('sort-by').value = col;
   filterPlayers();
 }
