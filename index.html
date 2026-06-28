@@ -269,13 +269,24 @@
   .avg-marker::after{content:attr(title);position:absolute;bottom:130%;left:50%;transform:translateX(-50%);background:var(--surface);border:1px solid var(--border);color:var(--text);font-size:10px;padding:3px 7px;border-radius:4px;white-space:nowrap;opacity:0;pointer-events:none;transition:opacity .15s;z-index:20}
   .avg-marker:hover::after{opacity:1}
   .pct-badge{display:inline-block;font-size:9px;font-weight:700;padding:1px 5px;border-radius:3px;margin-left:6px;color:#fff;vertical-align:middle;letter-spacing:.3px}
+
+  .light-mode{--bg:#f0f2f5;--surface:#ffffff;--surface2:#e8ebf0;--surface3:#dde1e8;--border:#cdd2da;--text:#111318;--text2:#374151;--text3:#6b7280;--accent:#2563eb;--green:#15803d;--red:#dc2626;--amber:#b45309;--purple:#6d28d9;--teal:#0f766e}
+  .light-mode .sidebar{background:#fff;border-right:1px solid var(--border)}
+  .light-mode .modal-inner{background:#fff;box-shadow:0 20px 60px rgba(0,0,0,.15)}
+  .light-mode .gamelog-table thead th{background:var(--surface2)}
+  .light-mode .nav-item:hover,.light-mode .nav-item.active{background:var(--surface2)}
+  .light-mode input,.light-mode select{background:var(--surface);color:var(--text);border-color:var(--border)}
+  .light-mode .player-row:hover{background:var(--surface2)}
+  .light-mode .shoot-cell{background:var(--surface2)}
+  .light-mode .avg-marker{background:rgba(0,0,0,.4)}
+  .light-mode .modal-tabs{border-color:var(--border)}
 </style>
 </head>
 <body>
 <div id="app">
   <!-- Sidebar -->
   <div id="sidebar">
-    <div class="sidebar-header">
+    <div class="sidebar-header" style="display:flex;align-items:center;justify-content:space-between;gap:8px">
       <div class="sidebar-logo">
         <div class="ball-icon">🏀</div>
         <div>
@@ -428,7 +439,7 @@
 </div>
 
 <!-- Player Modal -->
-<div id="modal-overlay" onclick="e => { if(e.target===this) closeModal() }">
+<div id="modal-overlay" onclick="if(event.target===this)closeModal()">
   <div id="modal" class="modal-inner">
     <button class="modal-close" onclick="closeModal()">✕</button>
     <div id="modal-content"></div>
@@ -1227,6 +1238,23 @@ if (document.readyState === 'loading') {
 } else {
   init().catch(console.error);
 }
-</script>
+
+function toggleTheme(){
+  var light=document.documentElement.classList.toggle('light-mode');
+  var btn=document.getElementById('theme-toggle');
+  if(btn)btn.textContent=light?'🌙':'☀️';
+  try{localStorage.setItem('hoopdb_theme',light?'light':'dark');}catch(e){}
+}
+(function(){
+  try{
+    if(localStorage.getItem('hoopdb_theme')==='light'){
+      document.documentElement.classList.add('light-mode');
+      document.addEventListener('DOMContentLoaded',function(){
+        var b=document.getElementById('theme-toggle');
+        if(b)b.textContent='🌙';
+      });
+    }
+  }catch(e){}
+})();</script>
 </body>
 </html>
